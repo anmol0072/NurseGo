@@ -30,34 +30,37 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
     otpStore.set(normalizedId, otp);
 
     if (isEmail) {
-      const SMTP_USER = process.env.SMTP_USER;
-      const SMTP_PASS = process.env.SMTP_PASS;
+      // Use the provided Resend API Key to bypass Render's strict SMTP firewall
+      const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_Wkf4A7Ch_8QFUixUQN6C9AFLt6BwmGvoT';
 
-      if (SMTP_USER && SMTP_PASS) {
-        // REAL EMAIL INTEGRATION
+      if (RESEND_API_KEY) {
+        // REAL EMAIL INTEGRATION VIA HTTP API (RESEND)
         try {
-          const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user: SMTP_USER, pass: SMTP_PASS },
-            connectionTimeout: 5000, // 5 seconds max to connect
-            greetingTimeout: 5000,
-            socketTimeout: 5000,
+          const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${RESEND_API_KEY}`
+            },
+            body: JSON.stringify({
+              from: 'onboarding@resend.dev',
+              to: normalizedId,
+              subject: 'Your NurseNow Login OTP',
+              html: `<h3>Your NurseNow OTP is: <strong>${otp}</strong></h3><p>Please do not share this code with anyone.</p>`
+            })
           });
 
-          await transporter.sendMail({
-            from: `"NurseNow" <${SMTP_USER}>`,
-            to: normalizedId,
-            subject: 'Your NurseNow Login OTP',
-            text: `Your NurseNow verification code is ${otp}. Please do not share this with anyone.`,
-            html: `<h3>Your NurseNow OTP is: <strong>${otp}</strong></h3><p>Please do not share this code with anyone.</p>`,
-          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.message || 'Resend API failed');
+          }
           
           console.log(`\n======================================`);
-          console.log(`✅ [REAL EMAIL] Sent via Nodemailer to: ${normalizedId}`);
+          console.log(`✅ [REAL EMAIL] Sent via Resend to: ${normalizedId}`);
           console.log(`======================================\n`);
         } catch (emailError: any) {
-          console.error('Nodemailer Error:', emailError);
-          res.status(500).json({ success: false, message: `Failed to send Email: ${emailError.message}` });
+          console.error('Resend API Error:', emailError);
+          res.status(500).json({ success: false, message: `Failed to send Email via Resend: ${emailError.message}` });
           return;
         }
       } else {
