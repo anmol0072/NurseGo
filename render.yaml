@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: nursenow-backend
+    env: node
+    rootDir: nursenow-backend
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RAZORPAY_KEY_ID
+        value: "rzp_test_mockkey123456"
+      - key: RAZORPAY_KEY_SECRET
+        value: "secret123"
+
+  - type: web
+    name: nursenow-frontend
+    env: static
+    rootDir: nursenow-app
+    buildCommand: npm install && npx expo export -p web
+    staticPublishPath: dist
+    envVars:
+      - key: EXPO_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: nursenow-backend
+          envVarKey: RENDER_EXTERNAL_URL
