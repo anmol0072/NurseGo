@@ -1,8 +1,8 @@
 services:
   - type: web
-    name: nursenow-backend
+    name: nursego-backend
     env: node
-    rootDir: nursenow-backend
+    rootDir: nursego-backend
     buildCommand: npm install && npx prisma generate && npm run build
     startCommand: npm start
     envVars:
@@ -16,14 +16,14 @@ services:
         value: "secret123"
 
   - type: web
-    name: nursenow-frontend
+    name: nursego-frontend
     env: static
-    rootDir: nursenow-app
+    rootDir: nursego-app
     buildCommand: npm install && npx expo export -p web
     staticPublishPath: dist
     envVars:
       - key: EXPO_PUBLIC_API_URL
         fromService:
           type: web
-          name: nursenow-backend
+          name: nursego-backend
           envVarKey: RENDER_EXTERNAL_URL
