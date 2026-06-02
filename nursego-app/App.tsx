@@ -14,6 +14,8 @@ import RatingScreen from './src/screens/RatingScreen';
 import TrackingScreen from './src/screens/TrackingScreen';
 import AIAssistantScreen from './src/screens/AIAssistantScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import HistoryScreen from './src/screens/HistoryScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 import BookingHistoryScreen from './src/screens/BookingHistoryScreen';
 import FindingNurseScreen from './src/screens/FindingNurseScreen';
 
@@ -40,6 +42,8 @@ export default function App() {
         <Stack.Screen name="AIAssistant" component={AIAssistantScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="BookingHistory" component={BookingHistoryScreen} />
+        <Stack.Screen name="History" component={HistoryScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

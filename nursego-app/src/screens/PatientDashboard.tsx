@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, Image, Platform, TextInput, FlatList } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import SideMenu from '../components/SideMenu';
+import ProfileMenu from '../components/ProfileMenu';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,6 +26,19 @@ export default function PatientDashboard({ navigation }: any) {
   const geocoderRef = useRef<any>(null);
   const mapInstanceRef = useRef<any>(null);
   const patientMarkerRef = useRef<any>(null);
+  
+  // Menu States
+  const [isSideMenuVisible, setSideMenuVisible] = useState(false);
+  const [isProfileMenuVisible, setProfileMenuVisible] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const u = await AsyncStorage.getItem('user');
+      if (u) setUser(JSON.parse(u));
+    };
+    loadUser();
+  }, []);
 
   const insets = useSafeAreaInsets();
   const mapRef = useRef<View>(null);
@@ -162,7 +178,7 @@ export default function PatientDashboard({ navigation }: any) {
       
       {/* Floating Header */}
       <View style={[styles.floatingHeader, { top: Math.max(insets.top, 20) }]}>
-        <TouchableOpacity style={styles.menuButton}>
+        <TouchableOpacity style={styles.menuButton} onPress={() => setSideMenuVisible(true)}>
           <Ionicons name="menu" size={28} color="#0f172a" />
         </TouchableOpacity>
         
@@ -191,10 +207,10 @@ export default function PatientDashboard({ navigation }: any) {
         </View>
 
         <TouchableOpacity 
-          onPress={() => navigation.navigate('History')}
+          onPress={() => setProfileMenuVisible(true)}
           style={styles.profileButton}
         >
-          <Text style={styles.profileText}>JD</Text>
+          <Text style={styles.profileText}>{user?.name?.substring(0, 2).toUpperCase() || 'JD'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -253,6 +269,19 @@ export default function PatientDashboard({ navigation }: any) {
           <Ionicons name="arrow-forward" size={20} color="#ffffff" style={{marginLeft: 8}} />
         </TouchableOpacity>
       </View>
+
+      <SideMenu 
+        visible={isSideMenuVisible} 
+        onClose={() => setSideMenuVisible(false)} 
+        navigation={navigation} 
+      />
+
+      <ProfileMenu 
+        visible={isProfileMenuVisible} 
+        onClose={() => setProfileMenuVisible(false)} 
+        navigation={navigation} 
+        user={user} 
+      />
     </View>
   );
 }

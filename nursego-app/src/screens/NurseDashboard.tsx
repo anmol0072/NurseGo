@@ -1,10 +1,29 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, Switch } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import SideMenu from '../components/SideMenu';
+import ProfileMenu from '../components/ProfileMenu';
 
-export default function NurseDashboard() {
+export default function NurseDashboard({ navigation }: any) {
   const [isOnline, setIsOnline] = useState(false);
   const [incomingJob, setIncomingJob] = useState<boolean>(false);
+  const [locationSet, setLocationSet] = useState(false);
+  const insets = useSafeAreaInsets();
+  
+  // Menu States
+  const [isSideMenuVisible, setSideMenuVisible] = useState(false);
+  const [isProfileMenuVisible, setProfileMenuVisible] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  React.useEffect(() => {
+    const loadUser = async () => {
+      const u = await AsyncStorage.getItem('user');
+      if (u) setUser(JSON.parse(u));
+    };
+    loadUser();
+  }, []);
 
   // Mock function to simulate a patient booking a service
   const triggerMockJob = () => {
@@ -26,11 +45,28 @@ export default function NurseDashboard() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      
+      {/* Floating Header similar to Patient Dashboard */}
+      <View style={[styles.floatingHeader, { top: Math.max(insets.top, 20) }]}>
+        <TouchableOpacity style={styles.menuButton} onPress={() => setSideMenuVisible(true)}>
+          <Ionicons name="menu" size={28} color="#0f172a" />
+        </TouchableOpacity>
+        
+        <View style={{ flex: 1 }} />
+
+        <TouchableOpacity 
+          onPress={() => setProfileMenuVisible(true)}
+          style={styles.profileButton}
+        >
+          <Text style={styles.profileText}>{user?.name?.substring(0, 2).toUpperCase() || 'JD'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={[styles.scrollView, { marginTop: 60 }]} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.greeting}>Hi, Sarah 👋</Text>
+            <Text style={styles.greeting}>Hi, {user?.name?.split(' ')[0] || 'Nurse'} 👋</Text>
             <Text style={styles.subGreeting}>Ready to save lives today?</Text>
           </View>
           <View style={styles.statusToggle}>
@@ -58,14 +94,26 @@ export default function NurseDashboard() {
           </View>
         </View>
 
-        {/* Mock Map Placeholder */}
+        {/* Map & Location Placeholder */}
         <View style={styles.mapPlaceholder}>
           <Text style={styles.mapIcon}>📍</Text>
-          <Text style={styles.mapText}>Broadcasting Location...</Text>
-          <Text style={styles.mapSubText}>Radius: 10km</Text>
-          <TouchableOpacity style={styles.testBtn} onPress={triggerMockJob}>
-            <Text style={styles.testBtnText}>Test Incoming Job</Text>
-          </TouchableOpacity>
+          {locationSet ? (
+            <>
+              <Text style={styles.mapText}>Broadcasting Location...</Text>
+              <Text style={styles.mapSubText}>Radius: 10km</Text>
+              <TouchableOpacity style={styles.testBtn} onPress={triggerMockJob}>
+                <Text style={styles.testBtnText}>Test Incoming Job</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={styles.mapText}>Location Not Set</Text>
+              <Text style={styles.mapSubText}>You must set your location to receive jobs</Text>
+              <TouchableOpacity style={[styles.testBtn, { backgroundColor: '#0f766e' }]} onPress={() => setLocationSet(true)}>
+                <Text style={styles.testBtnText}>Set Current Location</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         {/* Incoming Job Modal/Card */}
@@ -103,6 +151,19 @@ export default function NurseDashboard() {
         )}
 
       </ScrollView>
+
+      <SideMenu 
+        visible={isSideMenuVisible} 
+        onClose={() => setSideMenuVisible(false)} 
+        navigation={navigation} 
+      />
+
+      <ProfileMenu 
+        visible={isProfileMenuVisible} 
+        onClose={() => setProfileMenuVisible(false)} 
+        navigation={navigation} 
+        user={user} 
+      />
     </SafeAreaView>
   );
 }
@@ -149,5 +210,46 @@ const styles = StyleSheet.create({
 
   emptyState: { alignItems: 'center', marginTop: 40 },
   emptyStateIcon: { fontSize: 48, marginBottom: 16, opacity: 0.5 },
-  emptyStateText: { color: '#94a3b8', fontSize: 16, fontWeight: '600' }
+  emptyStateText: { color: '#94a3b8', fontSize: 16, fontWeight: '600' },
+
+  floatingHeader: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  menuButton: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  profileButton: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#0f766e',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0f766e',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  profileText: {
+    color: '#ffffff',
+    fontWeight: '800',
+    fontSize: 16,
+  },
 });
