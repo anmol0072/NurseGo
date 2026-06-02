@@ -1,228 +1,156 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../models/prisma.client';
 import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
-import twilio from 'twilio';
-
-const prisma = new PrismaClient();
-
-// In-memory store for OTPs (For demo purposes. In production, use Redis)
-const otpStore = new Map<string, string>();
+import bcrypt from 'bcryptjs';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'nursenow_super_secret_key_2026';
 
-export const sendOtp = async (req: Request, res: Response): Promise<void> => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { identifier } = req.body;
-    
-    if (!identifier) {
-      res.status(400).json({ success: false, message: 'Email or Mobile Number is required' });
+    const { name, email, phone, role, password } = req.body;
+
+    if (!password) {
+      res.status(400).json({ success: false, message: 'Password is required' });
       return;
     }
 
-    const isEmail = identifier.includes('@');
-    const normalizedId = isEmail ? identifier.toLowerCase().trim() : identifier.trim();
-
-    // Generate a 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Save to store
-    otpStore.set(normalizedId, otp);
-
-    if (isEmail) {
-      // Use the provided Resend API Key to bypass Render's strict SMTP firewall
-      const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_Wkf4A7Ch_8QFUixUQN6C9AFLt6BwmGvoT';
-
-      if (RESEND_API_KEY) {
-        // REAL EMAIL INTEGRATION VIA HTTP API (RESEND)
-        try {
-          const response = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${RESEND_API_KEY}`
-            },
-            body: JSON.stringify({
-              from: 'onboarding@resend.dev',
-              to: normalizedId,
-              subject: 'Your NurseGo Login OTP',
-              html: `<h3>Your NurseGo OTP is: <strong>${otp}</strong></h3><p>Please do not share this code with anyone.</p>`
-            })
-          });
-
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.message || 'Resend API failed');
-          }
-          
-          console.log(`\n======================================`);
-          console.log(`✅ [REAL EMAIL] Sent via Resend to: ${normalizedId}`);
-          console.log(`======================================\n`);
-        } catch (emailError: any) {
-          console.error('Resend API Error:', emailError);
-          res.status(500).json({ success: false, message: `Failed to send Email via Resend: ${emailError.message}` });
-          return;
-        }
-      } else {
-        // MOCK EMAIL
-        console.log(`\n======================================`);
-        console.log(`📧 [MOCK EMAIL] To: ${normalizedId}`);
-        console.log(`✉️ Message: Your NurseGo OTP is ${otp}`);
-        console.log(`======================================\n`);
-        res.json({ success: true, message: 'Mock Email OTP sent (Check Render Logs)' });
-        return;
-      }
-    } else {
-      // It's a phone number
-      const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-      const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
-      const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
-
-      if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_PHONE_NUMBER) {
-        // REAL SMS
-        try {
-          const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-          const formattedPhone = normalizedId.length === 10 ? `+91${normalizedId}` : normalizedId;
-
-          await twilioClient.messages.create({
-            body: `Your NurseGo verification code is ${otp}. Please do not share this with anyone.`,
-            from: TWILIO_PHONE_NUMBER,
-            to: formattedPhone
-          });
-          
-          console.log(`\n======================================`);
-          console.log(`✅ [REAL SMS] Sent via Twilio to: ${formattedPhone}`);
-          console.log(`======================================\n`);
-        } catch (smsError: any) {
-          console.error('Twilio Error:', smsError);
-          res.status(500).json({ success: false, message: `Failed to send SMS via Twilio: ${smsError.message}` });
-          return;
-        }
-      } else {
-        // MOCK SMS
-        console.log(`\n======================================`);
-        console.log(`📱 [MOCK SMS] To: ${normalizedId}`);
-        console.log(`✉️ Message: Your NurseGo OTP is ${otp}`);
-        console.log(`======================================\n`);
-        res.json({ success: true, message: 'Mock SMS OTP sent (Check Render Logs)' });
-        return;
-      }
-    }
-
-    res.json({ success: true, message: 'OTP sent successfully' });
-  } catch (error) {
-    console.error('Error sending OTP:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
-
-export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { identifier, otp, role } = req.body;
-
-    if (!identifier || !otp) {
-      res.status(400).json({ success: false, message: 'Identifier and OTP are required' });
-      return;
-    }
-
-    const isEmail = identifier.includes('@');
-    const normalizedId = isEmail ? identifier.toLowerCase().trim() : identifier.trim();
-    const storedOtp = otpStore.get(normalizedId);
-
-    if (storedOtp !== otp) {
-      res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
-      return;
-    }
-
-    // Clear OTP
-    otpStore.delete(normalizedId);
-
-    // Find user by either email or phone
-    const user = await prisma.user.findFirst({
-      where: isEmail ? { email: normalizedId } : { phone: normalizedId }
-    });
-
-    if (!user) {
-      // User doesn't exist, tell frontend to register
-      res.json({ 
-        success: true, 
-        isNewUser: true, 
-        message: 'OTP verified. User not found, please register.' 
-      });
-      return;
-    }
-
-    // Direct Login!
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
-
-    res.json({
-      success: true,
-      isNewUser: false,
-      token,
-      user,
-      message: 'Logged in successfully'
-    });
-
-  } catch (error) {
-    console.error('Error verifying OTP:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
-
-export const registerUser = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { email, phone, name, age, gender, address, role } = req.body;
-
-    if (!name || (!email && !phone)) {
-      res.status(400).json({ success: false, message: 'Name and either Email or Phone are required' });
-      return;
-    }
-
-    const normalizedEmail = email ? email.toLowerCase().trim() : null;
-    const normalizedPhone = phone ? phone.trim() : null;
-
-    // Check if user already exists
+    // Check if user exists
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
-          normalizedEmail ? { email: normalizedEmail } : {},
-          normalizedPhone ? { phone: normalizedPhone } : {}
-        ].filter(condition => Object.keys(condition).length > 0)
+          { email: email || undefined },
+          { phone: phone || undefined }
+        ]
       }
     });
 
     if (existingUser) {
-      res.status(400).json({ success: false, message: 'User already exists with this Email or Phone.' });
+      res.status(400).json({ success: false, message: 'User with this email or phone already exists' });
       return;
     }
 
-    // Generate UHID
-    const uhid = 'NN-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create user
     const newUser = await prisma.user.create({
       data: {
-        email: normalizedEmail,
-        phone: normalizedPhone,
         name,
-        age: age ? parseInt(age) : null,
-        gender,
-        address,
-        role: role === 'NURSE' ? 'NURSE' : 'PATIENT',
-        uhid: role === 'PATIENT' ? uhid : null
+        email,
+        phone,
+        role: role || 'PATIENT',
+        password: hashedPassword,
       }
     });
 
-    const token = jwt.sign({ userId: newUser.id, role: newUser.role }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: newUser.id, role: newUser.role }, JWT_SECRET, { expiresIn: '7d' });
 
-    res.status(201).json({
-      success: true,
-      token,
-      user: newUser,
-      message: 'Account created successfully'
+    res.json({ success: true, message: 'Registration successful', token, user: newUser });
+  } catch (error) {
+    console.error('Registration Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const login = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      res.status(400).json({ success: false, message: 'Identifier and password are required' });
+      return;
+    }
+
+    const isEmail = identifier.includes('@');
+    const normalizedId = isEmail ? identifier.toLowerCase().trim() : identifier.trim();
+
+    const user = await prisma.user.findFirst({
+      where: isEmail ? { email: normalizedId } : { phone: normalizedId }
     });
 
+    if (!user || !user.password) {
+      res.status(401).json({ success: false, message: 'Invalid credentials or user registered via Google' });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return;
+    }
+
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+
+    res.json({ success: true, message: 'Login successful', token, user });
   } catch (error) {
-    console.error('Error registering user:', error);
-    res.status(500).json({ success: false, message: 'Error creating account.' });
+    console.error('Login Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const googleLogin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { googleId, email, name, role } = req.body;
+
+    if (!googleId || !email) {
+      res.status(400).json({ success: false, message: 'Google ID and email are required' });
+      return;
+    }
+
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { googleId },
+          { email }
+        ]
+      }
+    });
+
+    if (!user) {
+      // Create new user via Google
+      user = await prisma.user.create({
+        data: {
+          googleId,
+          email,
+          name: name || 'Google User',
+          role: role || 'PATIENT',
+        }
+      });
+    } else if (!user.googleId) {
+      // Link Google account to existing email user
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { googleId }
+      });
+    }
+
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+
+    res.json({ success: true, message: 'Google login successful', token, user });
+  } catch (error) {
+    console.error('Google Login Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const me = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user?.userId;
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Fetch me error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

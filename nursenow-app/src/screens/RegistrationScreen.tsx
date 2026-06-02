@@ -17,6 +17,7 @@ export default function RegistrationScreen({ route, navigation }: any) {
     address: '',
     phone: isEmail ? '' : identifier,
     email: isEmail ? identifier : '',
+    password: '',
   });
 
   const showAlert = (title: string, message: string) => {
@@ -31,6 +32,10 @@ export default function RegistrationScreen({ route, navigation }: any) {
     try {
       if (!formData.name) {
         showAlert('Missing Info', 'Please enter your Full Name.');
+        return;
+      }
+      if (!formData.password || formData.password.length < 6) {
+        showAlert('Missing Info', 'Please enter a password with at least 6 characters.');
         return;
       }
       if (!formData.email && !formData.phone) {
@@ -121,6 +126,19 @@ export default function RegistrationScreen({ route, navigation }: any) {
                 value={formData.email}
                 editable={!isEmail}
                 onChangeText={(text) => setFormData({...formData, email: text})}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Create a password (min 6 characters)"
+                placeholderTextColor="#94a3b8"
+                secureTextEntry
+                value={formData.password}
+                onChangeText={(text) => setFormData({...formData, password: text})}
               />
             </View>
 

@@ -19,6 +19,8 @@ model User {
   gender          String?
   address         String?
   uhid            String?  @unique // Unique Health ID for patients
+  password        String?  // Hashed password
+  googleId        String?  @unique // For Google Auth
   
   // Nurse specific fields
   experience      Int?
