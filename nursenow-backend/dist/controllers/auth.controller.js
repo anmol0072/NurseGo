@@ -3,118 +3,143 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerUser = exports.verifyOtp = exports.sendOtp = void 0;
+exports.me = exports.googleLogin = exports.login = exports.register = void 0;
 const client_1 = require("@prisma/client");
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma = new client_1.PrismaClient();
-// In-memory store for OTPs (For demo purposes. In production, use Redis)
-const otpStore = new Map();
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const JWT_SECRET = process.env.JWT_SECRET || 'nursenow_super_secret_key_2026';
-const sendOtp = async (req, res) => {
+const register = async (req, res) => {
     try {
-        const { phone } = req.body;
-        if (!phone || phone.length < 10) {
-            res.status(400).json({ success: false, message: 'Invalid phone number' });
+        const { name, email, phone, role, password } = req.body;
+        if (!password) {
+            res.status(400).json({ success: false, message: 'Password is required' });
             return;
         }
-        // Generate a 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        // Save to store (expires in 5 mins logically, but Map doesn't auto-expire without TTL logic)
-        otpStore.set(phone, otp);
-        // ==========================================
-        // 🚨 SMS PROVIDER INTEGRATION MOCK 🚨
-        // Here is where we would call Twilio/MSG91
-        // e.g., await twilioClient.messages.create({ body: `Your NurseNow OTP is ${otp}`, to: phone, from: 'NURSENOW' })
-        // ==========================================
-        console.log(`\n======================================`);
-        console.log(`📱 [MOCK SMS] To: ${phone}`);
-        console.log(`✉️ Message: Your NurseNow OTP is ${otp}`);
-        console.log(`======================================\n`);
-        res.json({ success: true, message: 'OTP sent successfully (Check console)' });
-    }
-    catch (error) {
-        console.error('Error sending OTP:', error);
-        res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-};
-exports.sendOtp = sendOtp;
-const verifyOtp = async (req, res) => {
-    try {
-        const { phone, otp, role } = req.body;
-        if (!phone || !otp) {
-            res.status(400).json({ success: false, message: 'Phone and OTP are required' });
-            return;
-        }
-        const storedOtp = otpStore.get(phone);
-        if (storedOtp !== otp) {
-            res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
-            return;
-        }
-        // OTP Verified successfully. Clear it.
-        otpStore.delete(phone);
-        // Check if user exists in the database
-        const user = await prisma.user.findUnique({
-            where: { phone }
-        });
-        if (!user) {
-            // User doesn't exist, tell frontend to navigate to Registration screen
-            res.json({
-                success: true,
-                isNewUser: true,
-                message: 'OTP verified. User not found, please register.'
-            });
-            return;
-        }
-        // User exists. Generate JWT token and return user records
-        const token = jsonwebtoken_1.default.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
-        res.json({
-            success: true,
-            isNewUser: false,
-            token,
-            user,
-            message: 'Logged in successfully'
-        });
-    }
-    catch (error) {
-        console.error('Error verifying OTP:', error);
-        res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-};
-exports.verifyOtp = verifyOtp;
-const registerUser = async (req, res) => {
-    try {
-        const { phone, name, age, gender, address, role } = req.body;
-        if (!phone || !name) {
-            res.status(400).json({ success: false, message: 'Phone and name are required' });
-            return;
-        }
-        // Generate a unique UHID (e.g. NN-1A2B3C)
-        const uhid = 'NN-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-        // Save record to database
-        const newUser = await prisma.user.create({
-            data: {
-                phone,
-                name,
-                age: age ? parseInt(age) : null,
-                gender,
-                address,
-                role: role === 'NURSE' ? 'NURSE' : 'PATIENT',
-                uhid: role === 'PATIENT' ? uhid : null // Only patients get a UHID
+        // Check if user exists
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: email || undefined },
+                    { phone: phone || undefined }
+                ]
             }
         });
-        // Generate JWT token
-        const token = jsonwebtoken_1.default.sign({ userId: newUser.id, role: newUser.role }, JWT_SECRET, { expiresIn: '30d' });
-        res.status(201).json({
-            success: true,
-            token,
-            user: newUser,
-            message: 'Account created successfully'
+        if (existingUser) {
+            res.status(400).json({ success: false, message: 'User with this email or phone already exists' });
+            return;
+        }
+        // Hash password
+        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
+        // Create user
+        const newUser = await prisma.user.create({
+            data: {
+                name,
+                email,
+                phone,
+                role: role || 'PATIENT',
+                password: hashedPassword,
+            }
         });
+        const token = jsonwebtoken_1.default.sign({ userId: newUser.id, role: newUser.role }, JWT_SECRET, { expiresIn: '7d' });
+        res.json({ success: true, message: 'Registration successful', token, user: newUser });
     }
     catch (error) {
-        console.error('Error registering user:', error);
-        res.status(500).json({ success: false, message: 'Error creating account. Phone might already exist.' });
+        console.error('Registration Error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
-exports.registerUser = registerUser;
+exports.register = register;
+const login = async (req, res) => {
+    try {
+        const { identifier, password } = req.body;
+        if (!identifier || !password) {
+            res.status(400).json({ success: false, message: 'Identifier and password are required' });
+            return;
+        }
+        const isEmail = identifier.includes('@');
+        const normalizedId = isEmail ? identifier.toLowerCase().trim() : identifier.trim();
+        const user = await prisma.user.findFirst({
+            where: isEmail ? { email: normalizedId } : { phone: normalizedId }
+        });
+        if (!user || !user.password) {
+            res.status(401).json({ success: false, message: 'Invalid credentials or user registered via Google' });
+            return;
+        }
+        const isMatch = await bcryptjs_1.default.compare(password, user.password);
+        if (!isMatch) {
+            res.status(401).json({ success: false, message: 'Invalid credentials' });
+            return;
+        }
+        const token = jsonwebtoken_1.default.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+        res.json({ success: true, message: 'Login successful', token, user });
+    }
+    catch (error) {
+        console.error('Login Error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+exports.login = login;
+const googleLogin = async (req, res) => {
+    try {
+        const { googleId, email, name, role } = req.body;
+        if (!googleId || !email) {
+            res.status(400).json({ success: false, message: 'Google ID and email are required' });
+            return;
+        }
+        let user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { googleId },
+                    { email }
+                ]
+            }
+        });
+        if (!user) {
+            // Create new user via Google
+            user = await prisma.user.create({
+                data: {
+                    googleId,
+                    email,
+                    name: name || 'Google User',
+                    role: role || 'PATIENT',
+                }
+            });
+        }
+        else if (!user.googleId) {
+            // Link Google account to existing email user
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: { googleId }
+            });
+        }
+        const token = jsonwebtoken_1.default.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+        res.json({ success: true, message: 'Google login successful', token, user });
+    }
+    catch (error) {
+        console.error('Google Login Error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+exports.googleLogin = googleLogin;
+const me = async (req, res) => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ success: false, message: 'Unauthorized' });
+            return;
+        }
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            res.status(404).json({ success: false, message: 'User not found' });
+            return;
+        }
+        res.json({ success: true, user });
+    }
+    catch (error) {
+        console.error('Fetch me error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+exports.me = me;
 //# sourceMappingURL=auth.controller.js.map
