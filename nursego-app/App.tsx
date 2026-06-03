@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import './global.css';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -24,10 +26,38 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const userStr = await AsyncStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          if (user.role === 'PATIENT') setInitialRoute('Patient');
+          else setInitialRoute('Nurse');
+        } else {
+          setInitialRoute('Auth');
+        }
+      } catch (e) {
+        setInitialRoute('Auth');
+      }
+    };
+    checkAuth();
+  }, []);
+
+  if (initialRoute === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#020617' }}>
+        <ActivityIndicator size="large" color="#14b8a6" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-      <Stack.Navigator initialRouteName="Auth" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Auth" component={AuthScreen} />
         <Stack.Screen name="Register" component={RegistrationScreen} />
         <Stack.Screen name="Patient" component={PatientDashboard} />
