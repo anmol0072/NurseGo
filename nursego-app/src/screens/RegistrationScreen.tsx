@@ -3,7 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://localhost:3000/api/auth';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = `${BASE_URL}/api/auth`;
 
 export default function RegistrationScreen({ route, navigation }: any) {
   const { identifier, role } = route.params || { identifier: '', role: 'PATIENT' };

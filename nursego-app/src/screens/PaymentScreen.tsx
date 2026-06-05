@@ -12,18 +12,48 @@ export default function PaymentScreen({ route, navigation }: any) {
   const { total = 0, serviceName = 'Wallet Top-up' } = route?.params || {};
   const isCheckoutFlow = total > 0;
 
-  const handlePay = () => {
+  const handlePay = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      if (isCheckoutFlow) {
-        navigation.replace('Tracking', { serviceName, total, paymentMethod: selectedMethod });
-      } else {
+    
+    if (isCheckoutFlow) {
+      try {
+        const userStr = await AsyncStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        const patientId = user?.id || 'anonymous';
+        
+        const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+        const res = await fetch(`${BASE_URL}/api/bookings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patientId,
+            serviceName,
+            totalAmount: total,
+            distance: 4,
+            paymentMethod: selectedMethod
+          })
+        });
+        
+        const data = await res.json();
+        setIsProcessing(false);
+        
+        if (data.success) {
+          navigation.replace('Tracking', { serviceName, total, paymentMethod: selectedMethod });
+        } else {
+          Alert.alert('Booking Error', data.message || 'Failed to create booking.');
+        }
+      } catch (error) {
+        setIsProcessing(false);
+        Alert.alert('Network Error', 'Could not connect to the booking server.');
+      }
+    } else {
+      setTimeout(() => {
+        setIsProcessing(false);
         if (Platform.OS === 'web') window.alert('Wallet updated!');
         else Alert.alert('Success', 'Wallet updated successfully!');
         navigation.goBack();
-      }
-    }, 1500);
+      }, 1500);
+    }
   };
 
   return (
