@@ -154,7 +154,9 @@ export default function PatientDashboard({ navigation }: any) {
     
     searchTimeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(text)}&limit=5`);
+        // Use a bounding box to strictly restrict search results to India
+        const indiaBbox = '68.1,6.5,97.4,35.5';
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(text)}&bbox=${indiaBbox}&limit=10`);
         const data = await res.json();
         setPredictions(data.features || []);
       } catch (e) {
