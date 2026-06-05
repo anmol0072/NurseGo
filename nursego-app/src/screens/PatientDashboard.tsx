@@ -27,6 +27,10 @@ export default function PatientDashboard({ navigation }: any) {
   const hospitalsLayerRef = useRef<any>(null);
   const searchTimeoutRef = useRef<any>(null);
   
+  // UI States
+  const [isBooked, setIsBooked] = useState(false);
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
+  
   // Menu States
   const [isSideMenuVisible, setSideMenuVisible] = useState(false);
   const [isProfileMenuVisible, setProfileMenuVisible] = useState(false);
@@ -71,9 +75,12 @@ export default function PatientDashboard({ navigation }: any) {
         // Add Patient Marker
         // @ts-ignore
         const customIcon = window.L.icon({
-          iconUrl: 'https://cdn-icons-png.flaticon.com/512/25/25694.png',
-          iconSize: [30, 30],
-          iconAnchor: [15, 30]
+          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
         });
         
         // @ts-ignore
@@ -186,9 +193,10 @@ export default function PatientDashboard({ navigation }: any) {
       
       // @ts-ignore
       const hospitalIcon = window.L.icon({
-        iconUrl: 'https://cdn-icons-png.flaticon.com/512/4320/4320350.png',
-        iconSize: [35, 35],
-        iconAnchor: [17, 35]
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        className: 'hospital-marker'
       });
 
       data.elements.forEach((hospital: any) => {
@@ -270,31 +278,44 @@ export default function PatientDashboard({ navigation }: any) {
         </TouchableOpacity>
       </View>
 
-      {/* Live Tracking Card (Food Delivery Style) */}
-      <View style={[styles.trackingCard, { bottom: 380 }]}>
-        <View style={styles.trackingHeader}>
-          <View>
-            <Text style={styles.trackingTitle}>Nurse Sarah is on the way!</Text>
-            <Text style={styles.trackingSubtitle}>Arriving in 12 mins • 3.2 km away</Text>
-          </View>
-          <View style={styles.pulsingDot}>
-            <View style={styles.pulsingCore} />
-          </View>
-        </View>
-        <View style={styles.trackingActions}>
-          <TouchableOpacity style={styles.trackingCallBtn}>
-            <Ionicons name="call" size={16} color="#fff" />
-            <Text style={styles.trackingCallText}>Call</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.trackingMsgBtn}>
-            <Ionicons name="chatbubble" size={16} color="#0f766e" />
-            <Text style={styles.trackingMsgText}>Message</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Map Controls */}
+      <View style={[styles.mapControls, { top: Math.max(insets.top, 80) }]}>
+        <TouchableOpacity style={styles.controlButton} onPress={() => setIsMapExpanded(!isMapExpanded)}>
+          <Ionicons name={isMapExpanded ? "contract" : "expand"} size={24} color="#0f172a" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.controlButton} onPress={() => setIsBooked(!isBooked)}>
+          <Ionicons name="medical" size={24} color={isBooked ? "#0f766e" : "#64748b"} />
+        </TouchableOpacity>
       </View>
 
+      {/* Live Tracking Card (Food Delivery Style) */}
+      {isBooked && (
+        <View style={[styles.trackingCard, { bottom: isMapExpanded ? 40 : 380 }]}>
+          <View style={styles.trackingHeader}>
+            <View>
+              <Text style={styles.trackingTitle}>Nurse Sarah is on the way!</Text>
+              <Text style={styles.trackingSubtitle}>Arriving in 12 mins • 3.2 km away</Text>
+            </View>
+            <View style={styles.pulsingDot}>
+              <View style={styles.pulsingCore} />
+            </View>
+          </View>
+          <View style={styles.trackingActions}>
+            <TouchableOpacity style={styles.trackingCallBtn}>
+              <Ionicons name="call" size={16} color="#fff" />
+              <Text style={styles.trackingCallText}>Call</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.trackingMsgBtn}>
+              <Ionicons name="chatbubble" size={16} color="#0f766e" />
+              <Text style={styles.trackingMsgText}>Message</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
       {/* Bottom Sheet */}
-      <View style={styles.bottomSheet}>
+      {!isMapExpanded && (
+        <View style={styles.bottomSheet}>
         <View style={styles.sheetHandle} />
         
         <Text style={styles.sheetTitle}>Where do you need a nurse?</Text>
@@ -348,6 +369,7 @@ export default function PatientDashboard({ navigation }: any) {
           <Ionicons name="arrow-forward" size={20} color="#ffffff" style={{marginLeft: 8}} />
         </TouchableOpacity>
       </View>
+      )}
 
       <SideMenu 
         visible={isSideMenuVisible} 
@@ -383,6 +405,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     zIndex: 10,
+  },
+  mapControls: {
+    position: 'absolute',
+    right: 20,
+    flexDirection: 'column',
+    gap: 12,
+    zIndex: 9,
+  },
+  controlButton: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   menuButton: {
     width: 48,
