@@ -22,10 +22,10 @@ export default function PatientDashboard({ navigation }: any) {
   // Location Selection States
   const [addressQuery, setAddressQuery] = useState('');
   const [predictions, setPredictions] = useState<any[]>([]);
+  const autocompleteServiceRef = useRef<any>(null);
+  const geocoderRef = useRef<any>(null);
   const mapInstanceRef = useRef<any>(null);
   const patientMarkerRef = useRef<any>(null);
-  const hospitalsLayerRef = useRef<any>(null);
-  const searchTimeoutRef = useRef<any>(null);
   
   // UI States
   const [isBooked, setIsBooked] = useState(false);
@@ -51,173 +51,176 @@ export default function PatientDashboard({ navigation }: any) {
     if (Platform.OS === 'web') {
       const initMap = () => {
         // @ts-ignore
-        if (!window.L) return;
+        if (!window.google) return;
         const mapElement = mapRef.current as unknown as HTMLElement;
         if (!mapElement) return;
 
-        // Prevent re-initialization error
         // @ts-ignore
-        if (mapElement._leaflet_id) return;
-
-        // @ts-ignore
-        const map = window.L.map(mapElement, {
-          zoomControl: false,
-          attributionControl: false
-        }).setView([28.6139, 77.2090], 14); // New Delhi
-
-        // @ts-ignore
-        window.L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          maxZoom: 19,
-        }).addTo(map);
+        const map = new window.google.maps.Map(mapElement, {
+          center: { lat: 28.6139, lng: 77.2090 }, // New Delhi coordinates
+          zoom: 14,
+          disableDefaultUI: true,
+          styles: [
+            { "elementType": "geometry", "stylers": [{"color": "#f5f5f5"}] },
+            { "elementType": "labels.icon", "stylers": [{"visibility": "off"}] },
+            { "elementType": "labels.text.fill", "stylers": [{"color": "#616161"}] },
+            { "elementType": "labels.text.stroke", "stylers": [{"color": "#f5f5f5"}] },
+            { "featureType": "water", "elementType": "geometry", "stylers": [{"color": "#c9c9c9"}] }
+          ]
+        });
         
         mapInstanceRef.current = map;
+        // @ts-ignore
+        autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
+        // @ts-ignore
+        geocoderRef.current = new window.google.maps.Geocoder();
 
         // Add Patient Marker
         // @ts-ignore
-        const customIcon = window.L.icon({
-          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
+        patientMarkerRef.current = new window.google.maps.Marker({
+          position: { lat: 28.6139, lng: 77.2090 },
+          map,
+          draggable: true,
+          icon: { url: 'https://cdn-icons-png.flaticon.com/512/25/25694.png', scaledSize: new window.google.maps.Size(30, 30) }
         });
-        
-        // @ts-ignore
-        patientMarkerRef.current = window.L.marker([28.6139, 77.2090], { icon: customIcon, draggable: true }).addTo(map);
 
-        patientMarkerRef.current.on('dragend', async (e: any) => {
-          const position = e.target.getLatLng();
-          mapInstanceRef.current.setView(position);
+        // @ts-ignore
+        window.google.maps.event.addListener(patientMarkerRef.current, 'dragend', function() {
+          const position = patientMarkerRef.current.getPosition();
+          map.panTo(position);
           
-          try {
-            const res = await fetch(`https://photon.komoot.io/reverse?lon=${position.lng}&lat=${position.lat}`);
-            const data = await res.json();
-            let displayName = 'Selected Location';
-            if (data.features && data.features.length > 0) {
-               const props = data.features[0].properties;
-               displayName = [props.name, props.street, props.city].filter(Boolean).join(', ') || displayName;
-            }
-            selectPlace(position.lat.toString(), position.lng.toString(), displayName);
-          } catch(err) { 
-            console.log('Reverse geocode error', err);
-            selectPlace(position.lat.toString(), position.lng.toString(), 'Selected Location');
+          if (geocoderRef.current) {
+            geocoderRef.current.geocode({ location: position }, (results: any, status: any) => {
+              // @ts-ignore
+              if (status === window.google.maps.GeocoderStatus.OK && results[0]) {
+                const addr = results[0].formatted_address;
+                setAddressQuery(addr);
+                fetchHospitals(position.lat(), position.lng());
+              }
+            });
           }
         });
 
         // Dummy Nurses
         const nurses = [
-          [28.6150, 77.2100],
-          [28.6110, 77.2050],
-          [28.6170, 77.2150]
+          { lat: 28.6150, lng: 77.2100 },
+          { lat: 28.6110, lng: 77.2050 },
+          { lat: 28.6170, lng: 77.2150 }
         ];
-
-        // @ts-ignore
-        const nurseIcon = window.L.icon({
-          iconUrl: 'https://cdn-icons-png.flaticon.com/512/3063/3063205.png',
-          iconSize: [40, 40],
-          iconAnchor: [20, 40]
-        });
 
         nurses.forEach(coord => {
           // @ts-ignore
-          window.L.marker(coord, { icon: nurseIcon }).addTo(map);
+          new window.google.maps.Marker({
+            position: coord,
+            map,
+            icon: {
+              url: 'https://cdn-icons-png.flaticon.com/512/3063/3063205.png',
+              // @ts-ignore
+              scaledSize: new window.google.maps.Size(40, 40)
+            }
+          });
         });
       };
 
-      // @ts-ignore
-      if (!window.L) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
+      // Ensure initMap runs after component mounts
+      const checkAndInitMap = () => {
+        if (mapRef.current) {
+          initMap();
+        } else {
+          setTimeout(checkAndInitMap, 100);
+        }
+      };
 
+      // @ts-ignore
+      if (!window.google || !window.google.maps.places) {
         const script = document.createElement('script');
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAEJ6oMNsGwveIlwNLlCVbw4DzcNGNzBl4&libraries=places`;
         script.async = true;
-        script.onload = initMap;
-        document.head.appendChild(script);
+        script.defer = true;
+        script.onload = checkAndInitMap;
+        document.body.appendChild(script);
       } else {
-        initMap();
+        checkAndInitMap();
       }
     }
   }, []);
 
   const handleSearch = (text: string) => {
     setAddressQuery(text);
-    if (!text || text.length < 3) {
+    if (!text || !autocompleteServiceRef.current) {
       setPredictions([]);
       return;
     }
-    
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    
-    searchTimeoutRef.current = setTimeout(async () => {
-      try {
-        // Use a bounding box to strictly restrict search results to India
-        const indiaBbox = '68.1,6.5,97.4,35.5';
-        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(text)}&bbox=${indiaBbox}&limit=10`);
-        const data = await res.json();
-        setPredictions(data.features || []);
-      } catch (e) {
-        console.log('Search error:', e);
+    autocompleteServiceRef.current.getPlacePredictions(
+      { input: text, componentRestrictions: { country: 'in' } },
+      (results: any, status: any) => {
+        // @ts-ignore
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+          setPredictions(results);
+        } else {
+          setPredictions([]);
+        }
       }
-    }, 500);
+    );
   };
 
-  const selectPlace = async (lat: string, lon: string, displayName: string) => {
-    setAddressQuery(displayName);
+  const selectPlace = (placeId: string, description: string) => {
+    setAddressQuery(description);
     setPredictions([]);
-    
-    if (!mapInstanceRef.current) return;
-    
-    const latNum = parseFloat(lat);
-    const lonNum = parseFloat(lon);
+    if (!geocoderRef.current || !mapInstanceRef.current) return;
 
-    mapInstanceRef.current.setView([latNum, lonNum], 14);
-    if (patientMarkerRef.current) {
-      patientMarkerRef.current.setLatLng([latNum, lonNum]);
-    }
+    geocoderRef.current.geocode({ placeId }, (results: any, status: any) => {
+      // @ts-ignore
+      if (status === window.google.maps.GeocoderStatus.OK && results[0]) {
+        const location = results[0].geometry.location;
+        mapInstanceRef.current.panTo(location);
+        mapInstanceRef.current.setZoom(14);
+        if (patientMarkerRef.current) {
+          patientMarkerRef.current.setPosition(location);
+        }
 
-    // Fetch Nearby Hospitals via Overpass API
-    try {
-      const query = `[out:json];node(around:5000,${latNum},${lonNum})[amenity=hospital];out 10;`;
-      const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      
-      // Clear old hospitals
-      if (hospitalsLayerRef.current) {
-        mapInstanceRef.current.removeLayer(hospitalsLayerRef.current);
+        fetchHospitals(location.lat(), location.lng());
       }
-      
-      // @ts-ignore
-      hospitalsLayerRef.current = window.L.layerGroup().addTo(mapInstanceRef.current);
-      
-      const hospitalSvg = encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="45" fill="#ef4444" stroke="#ffffff" stroke-width="5"/>
-          <rect x="40" y="25" width="20" height="50" fill="#ffffff" rx="2"/>
-          <rect x="25" y="40" width="50" height="20" fill="#ffffff" rx="2"/>
-        </svg>
-      `);
+    });
+  };
 
-      // @ts-ignore
-      const hospitalIcon = window.L.icon({
-        iconUrl: `data:image/svg+xml;charset=utf-8,${hospitalSvg}`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15],
-        className: 'hospital-marker'
-      });
-
-      data.elements.forEach((hospital: any) => {
+  const fetchHospitals = (lat: number, lng: number) => {
+    // @ts-ignore
+    const service = new window.google.maps.places.PlacesService(mapInstanceRef.current);
+    service.nearbySearch(
+      {
+        location: { lat, lng },
+        radius: 5000,
+        type: ['hospital']
+      },
+      (places: any, placesStatus: any) => {
         // @ts-ignore
-        window.L.marker([hospital.lat, hospital.lon], { icon: hospitalIcon })
-          .bindPopup(hospital.tags?.name || 'Hospital')
-          .addTo(hospitalsLayerRef.current);
-      });
-    } catch (e) {
-      console.log('Hospital fetch error:', e);
-    }
+        if (placesStatus === window.google.maps.places.PlacesServiceStatus.OK && places) {
+          
+          const hospitalSvg = encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" fill="#ef4444" stroke="#ffffff" stroke-width="5"/>
+              <rect x="40" y="25" width="20" height="50" fill="#ffffff" rx="2"/>
+              <rect x="25" y="40" width="50" height="20" fill="#ffffff" rx="2"/>
+            </svg>
+          `);
+
+          places.forEach((place: any) => {
+            // @ts-ignore
+            new window.google.maps.Marker({
+              position: place.geometry.location,
+              map: mapInstanceRef.current,
+              title: place.name,
+              icon: {
+                url: `data:image/svg+xml;charset=utf-8,${hospitalSvg}`,
+                // @ts-ignore
+                scaledSize: new window.google.maps.Size(35, 35)
+              }
+            });
+          });
+        }
+      }
+    );
   };
 
   const handleBookNow = () => {
@@ -265,15 +268,12 @@ export default function PatientDashboard({ navigation }: any) {
           
           {predictions.length > 0 && (
             <View style={styles.predictionsContainer}>
-              {predictions.map((p, idx) => {
-                const displayName = [p.properties.name, p.properties.street, p.properties.city, p.properties.state].filter(Boolean).join(', ');
-                return (
-                  <TouchableOpacity key={idx} style={styles.predictionItem} onPress={() => selectPlace(p.geometry.coordinates[1].toString(), p.geometry.coordinates[0].toString(), displayName)}>
-                    <Ionicons name="location-outline" size={20} color="#64748b" style={{marginRight: 8}}/>
-                    <Text style={styles.predictionText} numberOfLines={1}>{displayName}</Text>
-                  </TouchableOpacity>
-                );
-              })}
+              {predictions.map((p, idx) => (
+                <TouchableOpacity key={idx} style={styles.predictionItem} onPress={() => selectPlace(p.place_id, p.description)}>
+                  <Ionicons name="location-outline" size={20} color="#64748b" style={{marginRight: 8}}/>
+                  <Text style={styles.predictionText} numberOfLines={1}>{p.description}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           )}
         </View>

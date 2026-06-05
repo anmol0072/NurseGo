@@ -30,56 +30,61 @@ export default function NurseDashboard({ navigation }: any) {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS === 'web' && locationSet) {
+    if (Platform.OS === 'web') {
       const initMap = () => {
         // @ts-ignore
-        if (!window.L) return;
+        if (!window.google) return;
         const mapElement = mapRef.current as unknown as HTMLElement;
         if (!mapElement) return;
 
-        // Prevent re-init
         // @ts-ignore
-        if (mapElement._leaflet_id) return;
-
-        // @ts-ignore
-        const map = window.L.map(mapElement, {
-          zoomControl: false,
-          attributionControl: false
-        }).setView([28.6139, 77.2090], 14); // Default to New Delhi
-
-        // @ts-ignore
-        window.L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          maxZoom: 19,
-        }).addTo(map);
+        const map = new window.google.maps.Map(mapElement, {
+          center: { lat: 28.6139, lng: 77.2090 }, // New Delhi coordinates
+          zoom: 14,
+          disableDefaultUI: true,
+          styles: [
+            { "elementType": "geometry", "stylers": [{"color": "#f5f5f5"}] },
+            { "elementType": "labels.icon", "stylers": [{"visibility": "off"}] },
+            { "elementType": "labels.text.fill", "stylers": [{"color": "#616161"}] },
+            { "elementType": "labels.text.stroke", "stylers": [{"color": "#f5f5f5"}] },
+            { "featureType": "water", "elementType": "geometry", "stylers": [{"color": "#c9c9c9"}] }
+          ]
+        });
         
         mapInstanceRef.current = map;
 
         // Add Nurse Marker
         // @ts-ignore
-        const customIcon = window.L.icon({
-          iconUrl: 'https://cdn-icons-png.flaticon.com/512/3063/3063205.png',
-          iconSize: [40, 40],
-          iconAnchor: [20, 40]
+        nurseMarkerRef.current = new window.google.maps.Marker({
+          position: { lat: 28.6139, lng: 77.2090 },
+          map,
+          icon: {
+            url: 'https://cdn-icons-png.flaticon.com/512/3063/3063205.png',
+            // @ts-ignore
+            scaledSize: new window.google.maps.Size(40, 40)
+          }
         });
-        
-        // @ts-ignore
-        nurseMarkerRef.current = window.L.marker([28.6139, 77.2090], { icon: customIcon }).addTo(map);
+      };
+
+      // Ensure initMap runs after component mounts
+      const checkAndInitMap = () => {
+        if (mapRef.current) {
+          initMap();
+        } else {
+          setTimeout(checkAndInitMap, 100);
+        }
       };
 
       // @ts-ignore
-      if (!window.L) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
-
+      if (!window.google) {
         const script = document.createElement('script');
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAEJ6oMNsGwveIlwNLlCVbw4DzcNGNzBl4`;
         script.async = true;
-        script.onload = initMap;
-        document.head.appendChild(script);
+        script.defer = true;
+        script.onload = checkAndInitMap;
+        document.body.appendChild(script);
       } else {
-        setTimeout(initMap, 100);
+        checkAndInitMap();
       }
     }
   }, [locationSet]);
