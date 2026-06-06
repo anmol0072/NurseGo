@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, TextInput, Platform, Image } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -23,6 +23,7 @@ export default function PatientDashboard({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [destination, setDestination] = useState('');
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -74,7 +75,35 @@ export default function PatientDashboard({ navigation }: any) {
 
       <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        {/* Search & Filter */}
+        {/* Location & Map Section */}
+        <View style={styles.locationCard}>
+          <View style={styles.mapContainer}>
+            {Platform.OS === 'web' ? (
+              <iframe 
+                src="https://www.openstreetmap.org/export/embed.html?bbox=77.10%2C28.50%2C77.30%2C28.70&layer=mapnik"
+                style={{ width: '100%', height: '100%', border: 'none' }}
+              />
+            ) : (
+              <Image 
+                source={{ uri: 'https://cdn.pixabay.com/photo/2019/09/22/16/20/location-4496459_1280.png' }} 
+                style={{ width: '100%', height: '100%' }} 
+                resizeMode="cover"
+              />
+            )}
+          </View>
+          <View style={styles.destinationInputContainer}>
+            <Ionicons name="location" size={20} color="#e11d48" style={styles.searchIcon} />
+            <TextInput 
+              style={styles.searchInput}
+              placeholder="Search destination..."
+              placeholderTextColor="#94a3b8"
+              value={destination}
+              onChangeText={setDestination}
+            />
+          </View>
+        </View>
+
+        {/* Search & Filter Services */}
         <View style={styles.searchSection}>
           <View style={styles.searchBar}>
             <Ionicons name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
@@ -232,6 +261,38 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
+  },
+  locationCard: {
+    marginHorizontal: 16,
+    marginBottom: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  mapContainer: {
+    height: 140,
+    width: '100%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#e2e8f0',
+    marginBottom: 12,
+  },
+  destinationInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    height: 48,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   searchSection: {
     flexDirection: 'row',
