@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, TextInput, Platform, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, TextInput, Platform, Image, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,7 +24,37 @@ export default function PatientDashboard({ navigation }: any) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [destination, setDestination] = useState('');
+  const [mapUrl, setMapUrl] = useState('https://www.openstreetmap.org/export/embed.html?bbox=77.10%2C28.50%2C77.30%2C28.70&layer=mapnik');
+  const [isSearchingMap, setIsSearchingMap] = useState(false);
   const [user, setUser] = useState<any>(null);
+
+  const handleSearchLocation = async () => {
+    if (!destination.trim()) return;
+    setIsSearchingMap(true);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(destination)}&format=json&limit=1`, {
+        headers: { 'User-Agent': 'NurseGo/1.0' }
+      });
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const place = data[0];
+        const minLon = place.boundingbox[2];
+        const minLat = place.boundingbox[0];
+        const maxLon = place.boundingbox[3];
+        const maxLat = place.boundingbox[1];
+        
+        const newUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${minLon}%2C${minLat}%2C${maxLon}%2C${maxLat}&layer=mapnik&marker=${place.lat}%2C${place.lon}`;
+        setMapUrl(newUrl);
+      } else {
+        Alert.alert('Not Found', 'Location not found. Please try being more specific.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Could not search location.');
+    } finally {
+      setIsSearchingMap(false);
+    }
+  };
 
   useEffect(() => {
     const loadUser = async () => {
@@ -79,10 +109,17 @@ export default function PatientDashboard({ navigation }: any) {
         <View style={styles.locationCard}>
           <View style={styles.mapContainer}>
             {Platform.OS === 'web' ? (
-              <iframe 
-                src="https://www.openstreetmap.org/export/embed.html?bbox=77.10%2C28.50%2C77.30%2C28.70&layer=mapnik"
-                style={{ width: '100%', height: '100%', border: 'none' }}
-              />
+              <>
+                {isSearchingMap && (
+                  <View style={styles.mapLoaderOverlay}>
+                    <ActivityIndicator size="large" color="#1d4ed8" />
+                  </View>
+                )}
+                <iframe 
+                  src={mapUrl}
+                  style={{ width: '100%', height: '100%', border: 'none', opacity: isSearchingMap ? 0.5 : 1 }}
+                />
+              </>
             ) : (
               <Image 
                 source={{ uri: 'https://cdn.pixabay.com/photo/2019/09/22/16/20/location-4496459_1280.png' }} 
@@ -99,9 +136,14 @@ export default function PatientDashboard({ navigation }: any) {
               placeholderTextColor="#94a3b8"
               value={destination}
               onChangeText={setDestination}
+              onSubmitEditing={handleSearchLocation}
             />
-            <TouchableOpacity style={styles.setLocationBtn} onPress={() => {}}>
-              <Text style={styles.setLocationBtnText}>Search</Text>
+            <TouchableOpacity style={styles.setLocationBtn} onPress={handleSearchLocation} disabled={isSearchingMap}>
+              {isSearchingMap ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.setLocationBtnText}>Search</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -286,6 +328,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#e2e8f0',
     marginBottom: 12,
+    position: 'relative',
+  },
+  mapLoaderOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
   destinationInputContainer: {
     flexDirection: 'row',
