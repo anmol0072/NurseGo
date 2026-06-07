@@ -90,8 +90,6 @@ export default function ReceiptScreen({ route, navigation }: any) {
             <Ionicons name="location" size={20} color="#fff" style={{ marginRight: 8 }} />
             <Text style={styles.primaryBtnText}>Track Live Map</Text>
           </TouchableOpacity>
-
-          </TouchableOpacity>
         </View>
 
       </ScrollView>
