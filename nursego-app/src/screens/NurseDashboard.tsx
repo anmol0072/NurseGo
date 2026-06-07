@@ -113,7 +113,7 @@ export default function NurseDashboard({ navigation }: any) {
           {locationSet && Platform.OS !== 'web' && (
             <Image 
               source={{ uri: 'https://cdn.pixabay.com/photo/2019/09/22/16/20/location-4496459_1280.png' }} 
-              style={{ ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' }} 
+              style={{ ...StyleSheet.absoluteFill, width: '100%', height: '100%' }} 
               resizeMode="cover"
             />
           )}

@@ -407,8 +407,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: '#0f172a',
-    // @ts-ignore
-    outlineStyle: 'none'
   },
   filterButton: {
     width: 52,

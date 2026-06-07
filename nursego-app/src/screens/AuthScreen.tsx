@@ -134,8 +134,8 @@ export default function AuthScreen({ navigation }: any) {
 
       {/* Full Screen Premium Gradient */}
       <LinearGradient
-        colors={['#020617', '#1e3a8a', '#172554']}
-        style={StyleSheet.absoluteFillObject}
+        colors={['transparent', 'rgba(15,23,42,0.9)', '#0f172a']}
+        style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
@@ -387,11 +387,9 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: '#fff',
-    fontSize: 16,
-    paddingVertical: 16,
-    // @ts-ignore
-    outlineStyle: 'none',
+    color: '#0f172a',
+    fontSize: 15,
+    paddingVertical: 14,
   },
   primaryButton: {
     flexDirection: 'row',

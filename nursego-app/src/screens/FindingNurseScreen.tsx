@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f172a', // Dark theme for searching
   },
   mapBackground: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     opacity: 0.2,
     backgroundColor: '#020617',
   },
