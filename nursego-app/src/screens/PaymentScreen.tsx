@@ -132,12 +132,76 @@ export default function PaymentScreen({ route, navigation }: any) {
         Alert.alert('Network Error', 'Could not connect to the server.');
       }
     } else {
-      setTimeout(() => {
+      // Wallet Top-up Flow (Fixed to ₹500 for testing)
+      const topupAmount = 500;
+      
+      try {
+        const orderRes = await fetch(`${BASE_URL}/api/payments/create-order`, {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ amount: topupAmount })
+        });
+        const orderData = await orderRes.json();
+
+        if (orderRes.status !== 200 || !orderData.id) {
+           setIsProcessing(false);
+           Alert.alert('Gateway Error', orderData.error || 'Failed to initialize payment gateway.');
+           return;
+        }
+
+        if (Platform.OS === 'web') {
+           const script = document.createElement('script');
+           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+           script.async = true;
+           script.onload = () => {
+              const options = {
+                 key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_xxxxxx',
+                 amount: orderData.amount,
+                 currency: 'INR',
+                 name: 'NurseGo Wallet Top-up',
+                 description: 'Adding funds to wallet',
+                 order_id: orderData.id,
+                 handler: async function (response: any) {
+                    setIsProcessing(false);
+                    Alert.alert('Top-up Successful', '₹500 has been added to your wallet.');
+                    navigation.goBack();
+                 },
+                 theme: { color: '#1d4ed8' }
+              };
+              const rzp = new (window as any).Razorpay(options);
+              rzp.on('payment.failed', function (response: any) {
+                 setIsProcessing(false);
+                 alert('Payment Failed: ' + response.error.description);
+              });
+              rzp.open();
+           };
+           document.body.appendChild(script);
+        } else {
+           const options = {
+             description: 'Adding funds to wallet',
+             image: 'https://nursenow.in/logo.png',
+             currency: 'INR',
+             key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_xxxxxx',
+             amount: orderData.amount,
+             name: 'NurseGo Wallet Top-up',
+             order_id: orderData.id,
+             theme: {color: '#1d4ed8'}
+           }
+
+           RazorpayCheckout.open(options).then(async (data: any) => {
+             setIsProcessing(false);
+             Alert.alert('Top-up Successful', '₹500 has been added to your wallet.');
+             navigation.goBack();
+           }).catch((error: any) => {
+             setIsProcessing(false);
+             Alert.alert('Payment Failed', `Error: ${error.code} | ${error.description}`);
+           });
+        }
+
+      } catch (error) {
         setIsProcessing(false);
-        if (Platform.OS === 'web') window.alert('Wallet Top-up Gateway opening...');
-        else Alert.alert('Gateway Required', 'Please configure your Razorpay keys to process wallet top-ups.');
-        navigation.goBack();
-      }, 1000);
+        Alert.alert('Network Error', 'Could not connect to the server.');
+      }
     }
   };
 
