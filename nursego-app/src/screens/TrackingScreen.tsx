@@ -79,7 +79,7 @@ export default function TrackingScreen({ route, navigation }: any) {
               <Ionicons name="call" size={24} color="#1d4ed8" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate('Rating', route?.params || {})}>
+            <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate('Payment', route?.params || {})}>
               <Text style={styles.primaryButtonText}>Finish Service</Text>
             </TouchableOpacity>
           </View>

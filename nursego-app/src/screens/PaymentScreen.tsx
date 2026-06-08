@@ -35,7 +35,7 @@ export default function PaymentScreen({ route, navigation }: any) {
            const data = await res.json();
            setIsProcessing(false);
            if (data.success) {
-             navigation.replace('Tracking', { serviceName, total, paymentMethod: 'Cash on Arrival' });
+             navigation.replace('Rating', { serviceName, total, paymentMethod: 'Cash on Arrival' });
            } else {
              Alert.alert('Booking Error', data.message || 'Failed to create booking.');
            }
@@ -119,7 +119,7 @@ export default function PaymentScreen({ route, navigation }: any) {
              });
              
              setIsProcessing(false);
-             navigation.replace('Tracking', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
+             navigation.replace('Rating', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
 
            }).catch((error: any) => {
              setIsProcessing(false);

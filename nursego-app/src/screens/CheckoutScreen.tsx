@@ -18,7 +18,7 @@ export default function CheckoutScreen({ route, navigation }: any) {
   const total = subtotal + gst + tipAmount;
 
   const handleContinueToPayment = () => {
-    navigation.navigate('Payment', { total, serviceName });
+    navigation.navigate('FindingNurse', { total, serviceName });
   };
 
   // Removed processing overlay since payment is moved to PaymentScreen
@@ -108,7 +108,7 @@ export default function CheckoutScreen({ route, navigation }: any) {
         </View>
         <TouchableOpacity onPress={handleContinueToPayment} activeOpacity={0.8}>
           <LinearGradient colors={['#3b82f6', '#1d4ed8']} style={styles.payBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-            <Text style={styles.payBtnText}>Continue to Payment</Text>
+            <Text style={styles.payBtnText}>Confirm Booking</Text>
             <Ionicons name="chevron-forward" size={20} color="#fff" />
           </LinearGradient>
         </TouchableOpacity>

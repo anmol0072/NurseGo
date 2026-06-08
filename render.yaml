@@ -11,9 +11,9 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: RAZORPAY_KEY_ID
-        value: "rzp_test_mockkey123456"
+        value: "rzp_test_Sz6YLxjYCLroG8"
       - key: RAZORPAY_KEY_SECRET
-        value: "secret123"
+        value: "9FWAwfTmUQzK6pA0duywNKKa"
       - key: NODE_VERSION
         value: "18.17.0"
 
@@ -35,3 +35,5 @@ services:
           envVarKey: RENDER_EXTERNAL_URL
       - key: NODE_VERSION
         value: "18.17.0"
+      - key: EXPO_PUBLIC_RAZORPAY_KEY_ID
+        value: "rzp_test_Sz6YLxjYCLroG8"
