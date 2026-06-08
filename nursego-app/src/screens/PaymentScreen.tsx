@@ -58,39 +58,76 @@ export default function PaymentScreen({ route, navigation }: any) {
            return;
         }
 
-        const options = {
-          description: serviceName,
-          image: 'https://nursenow.in/logo.png',
-          currency: 'INR',
-          key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_xxxxxx',
-          amount: orderData.amount,
-          name: 'NurseGo',
-          order_id: orderData.id,
-          theme: {color: '#1d4ed8'}
+        if (Platform.OS === 'web') {
+           const script = document.createElement('script');
+           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+           script.onload = () => {
+              const rzpOptions = {
+                key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_xxxxxx',
+                amount: orderData.amount,
+                currency: 'INR',
+                name: 'NurseGo',
+                description: serviceName,
+                order_id: orderData.id,
+                handler: async function (response: any) {
+                   await fetch(`${BASE_URL}/api/payments/verify`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(response)
+                   });
+                   await fetch(`${BASE_URL}/api/bookings`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
+                   });
+                   setIsProcessing(false);
+                   navigation.replace('Tracking', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
+                },
+                theme: {color: '#1d4ed8'}
+              };
+              const rzp = new (window as any).Razorpay(rzpOptions);
+              rzp.on('payment.failed', function (response: any){
+                 setIsProcessing(false);
+                 Alert.alert('Payment Failed', response.error.description);
+              });
+              rzp.open();
+           };
+           document.body.appendChild(script);
+        } else {
+           const options = {
+             description: serviceName,
+             image: 'https://nursenow.in/logo.png',
+             currency: 'INR',
+             key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_xxxxxx',
+             amount: orderData.amount,
+             name: 'NurseGo',
+             order_id: orderData.id,
+             theme: {color: '#1d4ed8'}
+           }
+
+           RazorpayCheckout.open(options).then(async (data: any) => {
+             // Verify with backend
+             await fetch(`${BASE_URL}/api/payments/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+             });
+             
+             // Create Booking
+             await fetch(`${BASE_URL}/api/bookings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
+             });
+             
+             setIsProcessing(false);
+             navigation.replace('Tracking', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
+
+           }).catch((error: any) => {
+             setIsProcessing(false);
+             Alert.alert('Payment Failed', `Error: ${error.code} | ${error.description}`);
+           });
         }
-
-        RazorpayCheckout.open(options).then(async (data: any) => {
-          // Verify with backend
-          await fetch(`${BASE_URL}/api/payments/verify`, {
-             method: 'POST',
-             headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify(data)
-          });
-          
-          // Create Booking
-          await fetch(`${BASE_URL}/api/bookings`, {
-             method: 'POST',
-             headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
-          });
-          
-          setIsProcessing(false);
-          navigation.replace('Tracking', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
-
-        }).catch((error: any) => {
-          setIsProcessing(false);
-          Alert.alert('Payment Failed', `Error: ${error.code} | ${error.description}`);
-        });
 
       } catch (error) {
         setIsProcessing(false);
