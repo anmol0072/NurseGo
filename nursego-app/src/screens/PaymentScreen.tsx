@@ -47,7 +47,15 @@ export default function PaymentScreen({ route, navigation }: any) {
            headers: { 'Content-Type': 'application/json' },
            body: JSON.stringify({ amount: total })
         });
-        const orderData = await orderRes.json();
+        let orderData;
+        try {
+          const text = await orderRes.text();
+          orderData = JSON.parse(text);
+        } catch (e) {
+          setIsProcessing(false);
+          Alert.alert('Server Error', 'The server returned an invalid response. Please try again later.');
+          return;
+        }
 
         if (orderRes.status !== 200 || !orderData.id) {
            setIsProcessing(false);
@@ -57,35 +65,52 @@ export default function PaymentScreen({ route, navigation }: any) {
 
         if (Platform.OS === 'web') {
            const openRazorpayWeb = () => {
-              const rzpOptions = {
-                 key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_xxxxxx',
-                 amount: orderData.amount,
-                 currency: 'INR',
-                 name: 'NurseGo',
-                 description: serviceName,
-                 order_id: orderData.id,
-                 handler: async function (response: any) {
-                    await fetch(`${BASE_URL}/api/payments/verify`, {
-                       method: 'POST',
-                       headers: { 'Content-Type': 'application/json' },
-                       body: JSON.stringify(response)
-                    });
-                    await fetch(`${BASE_URL}/api/bookings`, {
-                       method: 'POST',
-                       headers: { 'Content-Type': 'application/json' },
-                       body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
-                    });
-                    setIsProcessing(false);
-                    navigation.replace('Rating', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
-                 },
-                 theme: {color: '#1d4ed8'}
-              };
-              const rzp = new (window as any).Razorpay(rzpOptions);
-              rzp.on('payment.failed', function (response: any){
+              try {
+                if (!(window as any).Razorpay) {
+                   setIsProcessing(false);
+                   Alert.alert('Script Error', 'Razorpay SDK failed to load. Please disable adblockers and try again.');
+                   return;
+                }
+
+                const rzpOptions = {
+                   key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_xxxxxx',
+                   amount: orderData.amount,
+                   currency: 'INR',
+                   name: 'NurseGo',
+                   description: serviceName,
+                   order_id: orderData.id,
+                   handler: async function (response: any) {
+                      try {
+                        await fetch(`${BASE_URL}/api/payments/verify`, {
+                           method: 'POST',
+                           headers: { 'Content-Type': 'application/json' },
+                           body: JSON.stringify(response)
+                        });
+                        await fetch(`${BASE_URL}/api/bookings`, {
+                           method: 'POST',
+                           headers: { 'Content-Type': 'application/json' },
+                           body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
+                        });
+                        setIsProcessing(false);
+                        navigation.replace('Rating', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
+                      } catch (err) {
+                        setIsProcessing(false);
+                        Alert.alert('Verification Error', 'Payment succeeded but verification failed.');
+                      }
+                   },
+                   theme: {color: '#1d4ed8'}
+                };
+                
+                const rzp = new (window as any).Razorpay(rzpOptions);
+                rzp.on('payment.failed', function (response: any){
+                   setIsProcessing(false);
+                   Alert.alert('Payment Failed', response.error ? response.error.description : 'Unknown error');
+                });
+                rzp.open();
+              } catch (err: any) {
                  setIsProcessing(false);
-                 Alert.alert('Payment Failed', response.error.description);
-              });
-              rzp.open();
+                 Alert.alert('Gateway Initialization Error', err.message || 'Failed to open Razorpay');
+              }
            };
 
            if ((window as any).Razorpay) {
