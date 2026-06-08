@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -37,7 +37,7 @@ export default function PaymentScreen({ route, navigation }: any) {
              body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
            });
            const data = await res.json();
-           setIsProcessing(false);
+           setProcessingStatus('idle');
            if (data.success) {
              navigation.replace('Rating', { serviceName, total, paymentMethod: 'Cash on Arrival' });
            } else {
@@ -75,7 +75,7 @@ export default function PaymentScreen({ route, navigation }: any) {
            const openRazorpayWeb = () => {
               try {
                 if (!(window as any).Razorpay) {
-                   setIsProcessing(false);
+                   setProcessingStatus('idle');
                    Alert.alert('Script Error', 'Razorpay SDK failed to load. Please disable adblockers and try again.');
                    return;
                 }
@@ -99,10 +99,10 @@ export default function PaymentScreen({ route, navigation }: any) {
                            headers: { 'Content-Type': 'application/json' },
                            body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
                         });
-                        setIsProcessing(false);
+                        setProcessingStatus('idle');
                         navigation.replace('Rating', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
                       } catch (err) {
-                        setIsProcessing(false);
+                        setProcessingStatus('idle');
                         Alert.alert('Verification Error', 'Payment succeeded but verification failed.');
                       }
                    },
@@ -111,12 +111,12 @@ export default function PaymentScreen({ route, navigation }: any) {
                 
                 const rzp = new (window as any).Razorpay(rzpOptions);
                 rzp.on('payment.failed', function (response: any){
-                   setIsProcessing(false);
+                   setProcessingStatus('idle');
                    Alert.alert('Payment Failed', response.error ? response.error.description : 'Unknown error');
                 });
                 rzp.open();
               } catch (err: any) {
-                 setIsProcessing(false);
+                 setProcessingStatus('idle');
                  Alert.alert('Gateway Initialization Error', err.message || 'Failed to open Razorpay');
               }
            };
@@ -129,7 +129,7 @@ export default function PaymentScreen({ route, navigation }: any) {
               script.async = true;
               script.onload = openRazorpayWeb;
               script.onerror = () => {
-                 setIsProcessing(false);
+                 setProcessingStatus('idle');
                  Alert.alert('Error', 'Failed to load payment gateway script.');
               };
               document.body.appendChild(script);
@@ -161,17 +161,17 @@ export default function PaymentScreen({ route, navigation }: any) {
                 body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
              });
              
-             setIsProcessing(false);
+             setProcessingStatus('idle');
              navigation.replace('Rating', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
 
            }).catch((error: any) => {
-             setIsProcessing(false);
+             setProcessingStatus('idle');
              Alert.alert('Payment Failed', `Error: ${error.code} | ${error.description}`);
            });
         }
 
       } catch (error) {
-        setIsProcessing(false);
+        setProcessingStatus('idle');
         Alert.alert('Network Error', 'Could not connect to the server.');
       }
     } else {
@@ -187,7 +187,7 @@ export default function PaymentScreen({ route, navigation }: any) {
         const orderData = await orderRes.json();
 
         if (orderRes.status !== 200 || !orderData.id) {
-           setIsProcessing(false);
+           setProcessingStatus('idle');
            Alert.alert('Gateway Error', orderData.error || 'Failed to initialize payment gateway.');
            return;
         }
@@ -205,7 +205,7 @@ export default function PaymentScreen({ route, navigation }: any) {
                  description: 'Adding funds to wallet',
                  order_id: orderData.id,
                  handler: async function (response: any) {
-                    setIsProcessing(false);
+                    setProcessingStatus('idle');
                     Alert.alert('Top-up Successful', '₹500 has been added to your wallet.');
                     navigation.goBack();
                  },
@@ -213,7 +213,7 @@ export default function PaymentScreen({ route, navigation }: any) {
               };
               const rzp = new (window as any).Razorpay(options);
               rzp.on('payment.failed', function (response: any) {
-                 setIsProcessing(false);
+                 setProcessingStatus('idle');
                  alert('Payment Failed: ' + response.error.description);
               });
               rzp.open();
@@ -232,17 +232,17 @@ export default function PaymentScreen({ route, navigation }: any) {
            }
 
            RazorpayCheckout.open(options).then(async (data: any) => {
-             setIsProcessing(false);
+             setProcessingStatus('idle');
              Alert.alert('Top-up Successful', '₹500 has been added to your wallet.');
              navigation.goBack();
            }).catch((error: any) => {
-             setIsProcessing(false);
+             setProcessingStatus('idle');
              Alert.alert('Payment Failed', `Error: ${error.code} | ${error.description}`);
            });
         }
 
       } catch (error) {
-        setIsProcessing(false);
+        setProcessingStatus('idle');
         Alert.alert('Network Error', 'Could not connect to the server.');
       }
     }
