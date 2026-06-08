@@ -50,11 +50,9 @@ export default function PaymentScreen({ route, navigation }: any) {
         });
         const orderData = await orderRes.json();
 
-        if (orderData.id && orderData.id.startsWith('order_mock_')) {
+        if (orderRes.status !== 200 || !orderData.id) {
            setIsProcessing(false);
-           Alert.alert('Razorpay Keys Missing', 'To open the real payment gateway, please add your real RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to the backend .env file. For now, we will simulate success.');
-           // Fallback simulate success
-           navigation.replace('Tracking', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
+           Alert.alert('Gateway Error', orderData.error || 'Failed to initialize payment gateway.');
            return;
         }
 

@@ -12,14 +12,32 @@ export default function ProfileScreen({ navigation }: any) {
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: 'John Doe',
-    phone: '+91 98765 43210',
+    name: 'Loading...',
+    phone: '+91 99999 99999',
     bloodType: 'O+',
-    allergies: 'Penicillin',
-    weight: '72 kg'
+    allergies: 'None',
+    weight: '65 kg',
+    license: 'SNC-849302',
+    education: 'B.Sc Nursing',
+    experience: '5 Years',
+    availability: 'Mon-Fri, 9AM-5PM'
   });
-
+  
   const [editForm, setEditForm] = useState(profileData);
+  const [userRole, setUserRole] = useState('PATIENT');
+
+  useEffect(() => {
+    (async () => {
+      const userStr = await AsyncStorage.getItem('user');
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        setProfileData(prev => ({ ...prev, name: u.name || 'User' }));
+        setEditForm(prev => ({ ...prev, name: u.name || 'User' }));
+        setUserRole(u.role || 'PATIENT');
+      }
+    })();
+  }, []);
+
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
   React.useEffect(() => {
@@ -76,7 +94,7 @@ export default function ProfileScreen({ navigation }: any) {
               {profileImage ? (
                 <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 40 }} />
               ) : (
-                <Text style={styles.avatarText}>JD</Text>
+                <Text style={styles.avatarText}>{profileData.name.charAt(0)}</Text>
               )}
             </View>
             <TouchableOpacity 
@@ -104,25 +122,66 @@ export default function ProfileScreen({ navigation }: any) {
 
         <View style={styles.section}>
           <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16}}>
-            <Text style={[styles.sectionTitle, {marginBottom: 0}]}>Medical History</Text>
+            <Text style={[styles.sectionTitle, {marginBottom: 0}]}>{userRole === 'NURSE' ? 'Professional Details' : 'Medical History'}</Text>
             <TouchableOpacity onPress={() => { setEditForm(profileData); setEditModalVisible(true); }}>
               <Text style={{color: '#1d4ed8', fontWeight: '700'}}>Edit</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.medicalGrid}>
-            <View style={styles.medicalBox}>
-              <Text style={styles.medicalLabel}>Blood Type</Text>
-              <Text style={styles.medicalValue}>{profileData.bloodType}</Text>
+          {userRole === 'NURSE' ? (
+            <View style={styles.medicalCard}>
+              <View style={styles.medicalHeader}>
+                <Ionicons name="medical" size={24} color="#0f766e" />
+                <Text style={[styles.medicalTitle, { color: '#0f766e' }]}>Professional Details</Text>
+              </View>
+              
+              <View style={styles.medicalRow}>
+                <View style={styles.medicalItem}>
+                  <Text style={styles.medicalLabel}>License #</Text>
+                  <Text style={styles.medicalValue}>{profileData.license}</Text>
+                </View>
+                <View style={styles.medicalItem}>
+                  <Text style={styles.medicalLabel}>Education</Text>
+                  <Text style={styles.medicalValue}>{profileData.education}</Text>
+                </View>
+              </View>
+
+              <View style={[styles.medicalRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+                <View style={styles.medicalItem}>
+                  <Text style={styles.medicalLabel}>Experience</Text>
+                  <Text style={styles.medicalValue}>{profileData.experience}</Text>
+                </View>
+                <View style={styles.medicalItem}>
+                  <Text style={styles.medicalLabel}>Availability</Text>
+                  <Text style={styles.medicalValue}>{profileData.availability}</Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.medicalBox}>
-              <Text style={styles.medicalLabel}>Allergies</Text>
-              <Text style={styles.medicalValue}>{profileData.allergies}</Text>
+          ) : (
+            <View style={styles.medicalCard}>
+              <View style={styles.medicalHeader}>
+                <Ionicons name="medical" size={24} color="#ef4444" />
+                <Text style={styles.medicalTitle}>Medical Details</Text>
+              </View>
+              
+              <View style={styles.medicalRow}>
+                <View style={styles.medicalItem}>
+                  <Text style={styles.medicalLabel}>Blood Type</Text>
+                  <Text style={styles.medicalValue}>{profileData.bloodType}</Text>
+                </View>
+                <View style={styles.medicalItem}>
+                  <Text style={styles.medicalLabel}>Weight</Text>
+                  <Text style={styles.medicalValue}>{profileData.weight}</Text>
+                </View>
+              </View>
+
+              <View style={[styles.medicalRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+                <View style={styles.medicalItem}>
+                  <Text style={styles.medicalLabel}>Allergies</Text>
+                  <Text style={styles.medicalValue}>{profileData.allergies}</Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.medicalBox}>
-              <Text style={styles.medicalLabel}>Weight</Text>
-              <Text style={styles.medicalValue}>{profileData.weight}</Text>
-            </View>
-          </View>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -208,16 +267,34 @@ export default function ProfileScreen({ navigation }: any) {
               <Text style={styles.inputLabel}>Phone Number</Text>
               <TextInput style={styles.input} value={editForm.phone} onChangeText={(text) => setEditForm({...editForm, phone: text})} />
 
-              <Text style={styles.sectionTitle}>Medical Details</Text>
-              
-              <Text style={styles.inputLabel}>Blood Type</Text>
-              <TextInput style={styles.input} value={editForm.bloodType} onChangeText={(text) => setEditForm({...editForm, bloodType: text})} />
+              {userRole === 'NURSE' ? (
+                <>
+                  <Text style={styles.sectionTitle}>Professional Details</Text>
+                  <Text style={styles.inputLabel}>Medical License #</Text>
+                  <TextInput style={styles.input} value={editForm.license} onChangeText={(text) => setEditForm({...editForm, license: text})} />
 
-              <Text style={styles.inputLabel}>Allergies</Text>
-              <TextInput style={styles.input} value={editForm.allergies} onChangeText={(text) => setEditForm({...editForm, allergies: text})} />
+                  <Text style={styles.inputLabel}>Highest Education</Text>
+                  <TextInput style={styles.input} value={editForm.education} onChangeText={(text) => setEditForm({...editForm, education: text})} />
 
-              <Text style={styles.inputLabel}>Weight</Text>
-              <TextInput style={styles.input} value={editForm.weight} onChangeText={(text) => setEditForm({...editForm, weight: text})} />
+                  <Text style={styles.inputLabel}>Years of Experience</Text>
+                  <TextInput style={styles.input} value={editForm.experience} onChangeText={(text) => setEditForm({...editForm, experience: text})} />
+                  
+                  <Text style={styles.inputLabel}>Working Availability</Text>
+                  <TextInput style={styles.input} value={editForm.availability} onChangeText={(text) => setEditForm({...editForm, availability: text})} />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.sectionTitle}>Medical Details</Text>
+                  <Text style={styles.inputLabel}>Blood Type</Text>
+                  <TextInput style={styles.input} value={editForm.bloodType} onChangeText={(text) => setEditForm({...editForm, bloodType: text})} />
+
+                  <Text style={styles.inputLabel}>Allergies</Text>
+                  <TextInput style={styles.input} value={editForm.allergies} onChangeText={(text) => setEditForm({...editForm, allergies: text})} />
+
+                  <Text style={styles.inputLabel}>Weight</Text>
+                  <TextInput style={styles.input} value={editForm.weight} onChangeText={(text) => setEditForm({...editForm, weight: text})} />
+                </>
+              )}
             </ScrollView>
 
             <TouchableOpacity style={styles.saveBtn} onPress={handleSaveProfile}>

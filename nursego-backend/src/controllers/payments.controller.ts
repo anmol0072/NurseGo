@@ -2,10 +2,9 @@ import { Request, Response } from 'express';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-// These are mock test keys. In a real app, these go in .env
 const razorpay = new Razorpay({
-  key_id: 'rzp_test_mockkey123456', 
-  key_secret: 'mocksecret1234567890abcd', 
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_xxxx', 
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'secret_xxxx', 
 });
 
 export const createOrder = async (req: Request, res: Response) => {
@@ -26,21 +25,8 @@ export const createOrder = async (req: Request, res: Response) => {
       const order = await razorpay.orders.create(options);
       res.json(order);
     } catch (razorpayError) {
-      // Since we are using mock keys for the demo, Razorpay API will reject it.
-      // So we will fallback to returning a perfectly structured mock order!
-      console.log('Using Mock Razorpay Order for Demo...');
-      res.json({
-        id: `order_mock_${Date.now()}`,
-        entity: 'order',
-        amount: options.amount,
-        amount_paid: 0,
-        amount_due: options.amount,
-        currency: 'INR',
-        receipt: options.receipt,
-        status: 'created',
-        attempts: 0,
-        created_at: Math.floor(Date.now() / 1000)
-      });
+      console.error('Razorpay API Error:', razorpayError);
+      res.status(500).json({ error: 'Razorpay API rejected the request. Please check your API keys.' });
     }
   } catch (error) {
     console.error('Payment Error:', error);
