@@ -57,31 +57,29 @@ export default function PaymentScreen({ route, navigation }: any) {
         }
 
         if (Platform.OS === 'web') {
-           const script = document.createElement('script');
-           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-           script.onload = () => {
+           const openRazorpayWeb = () => {
               const rzpOptions = {
-                key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_xxxxxx',
-                amount: orderData.amount,
-                currency: 'INR',
-                name: 'NurseGo',
-                description: serviceName,
-                order_id: orderData.id,
-                handler: async function (response: any) {
-                   await fetch(`${BASE_URL}/api/payments/verify`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(response)
-                   });
-                   await fetch(`${BASE_URL}/api/bookings`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
-                   });
-                   setIsProcessing(false);
-                   navigation.replace('Tracking', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
-                },
-                theme: {color: '#1d4ed8'}
+                 key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_xxxxxx',
+                 amount: orderData.amount,
+                 currency: 'INR',
+                 name: 'NurseGo',
+                 description: serviceName,
+                 order_id: orderData.id,
+                 handler: async function (response: any) {
+                    await fetch(`${BASE_URL}/api/payments/verify`, {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify(response)
+                    });
+                    await fetch(`${BASE_URL}/api/bookings`, {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod })
+                    });
+                    setIsProcessing(false);
+                    navigation.replace('Rating', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
+                 },
+                 theme: {color: '#1d4ed8'}
               };
               const rzp = new (window as any).Razorpay(rzpOptions);
               rzp.on('payment.failed', function (response: any){
@@ -90,7 +88,20 @@ export default function PaymentScreen({ route, navigation }: any) {
               });
               rzp.open();
            };
-           document.body.appendChild(script);
+
+           if ((window as any).Razorpay) {
+              openRazorpayWeb();
+           } else {
+              const script = document.createElement('script');
+              script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+              script.async = true;
+              script.onload = openRazorpayWeb;
+              script.onerror = () => {
+                 setIsProcessing(false);
+                 Alert.alert('Error', 'Failed to load payment gateway script.');
+              };
+              document.body.appendChild(script);
+           }
         } else {
            const options = {
              description: serviceName,
