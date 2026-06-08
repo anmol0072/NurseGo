@@ -1,5 +1,6 @@
-import express from 'express';
+import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
+// Trigger Render Deployment 2
 import authRoutes from './routes/auth.routes';
 import paymentsRoutes from './routes/payments.routes';
 import bookingsRoutes from './routes/bookings.routes';
