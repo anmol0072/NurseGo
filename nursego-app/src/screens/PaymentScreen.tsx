@@ -8,14 +8,19 @@ import RazorpayCheckout from 'react-native-razorpay';
 export default function PaymentScreen({ route, navigation }: any) {
   const insets = useSafeAreaInsets();
   const [selectedMethod, setSelectedMethod] = useState('upi');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<'idle' | 'processing' | 'waking'>('idle');
 
   // If accessed from Profile, route.params might be undefined
   const { total = 0, serviceName = 'Wallet Top-up' } = route?.params || {};
   const isCheckoutFlow = total > 0;
 
   const handlePay = async () => {
-    setIsProcessing(true);
+    setProcessingStatus('processing');
+    
+    // Set a timeout to show "waking up" message if Render free tier is asleep
+    const wakeTimeout = setTimeout(() => {
+       setProcessingStatus('waking');
+    }, 4000);
     const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
     
     if (isCheckoutFlow) {
@@ -51,14 +56,17 @@ export default function PaymentScreen({ route, navigation }: any) {
         try {
           const text = await orderRes.text();
           orderData = JSON.parse(text);
+          clearTimeout(wakeTimeout);
         } catch (e) {
-          setIsProcessing(false);
+          clearTimeout(wakeTimeout);
+          setProcessingStatus('idle');
           Alert.alert('Server Error', 'The server returned an invalid response. Please try again later.');
           return;
         }
 
         if (orderRes.status !== 200 || !orderData.id) {
-           setIsProcessing(false);
+           clearTimeout(wakeTimeout);
+           setProcessingStatus('idle');
            Alert.alert('Gateway Error', orderData.error || 'Failed to initialize payment gateway.');
            return;
         }
@@ -324,22 +332,42 @@ export default function PaymentScreen({ route, navigation }: any) {
             <Text style={styles.totalAmount}>₹ {total.toFixed(2)}</Text>
           </View>
           <TouchableOpacity 
-            style={[styles.payButton, isProcessing && {opacity: 0.7}]} 
+            style={[styles.payButton, processingStatus !== 'idle' && {opacity: 0.7}]} 
             onPress={handlePay}
-            disabled={isProcessing}
+            disabled={processingStatus !== 'idle'}
           >
-            <Text style={styles.payButtonText}>{isProcessing ? 'Processing...' : 'Proceed to Pay'}</Text>
-            {!isProcessing && <Ionicons name="lock-closed" size={16} color="#fff" style={{marginLeft: 8}} />}
+            {processingStatus !== 'idle' ? (
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <ActivityIndicator color="#fff" style={{marginRight: 10}} />
+                <Text style={styles.payButtonText}>
+                  {processingStatus === 'waking' ? 'Waking up secure server... (up to 60s)' : 'Processing...'}
+                </Text>
+              </View>
+            ) : (
+              <>
+                <Text style={styles.payButtonText}>Proceed to Pay</Text>
+                <Ionicons name="lock-closed" size={16} color="#fff" style={{marginLeft: 8}} />
+              </>
+            )}
           </TouchableOpacity>
         </View>
       ) : (
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
           <TouchableOpacity 
-            style={[styles.payButton, isProcessing && {opacity: 0.7}]} 
+            style={[styles.payButton, processingStatus !== 'idle' && {opacity: 0.7}]}
             onPress={handlePay}
-            disabled={isProcessing}
+            disabled={processingStatus !== 'idle'}
           >
-            <Text style={styles.payButtonText}>{isProcessing ? 'Processing...' : 'Save Default Payment Method'}</Text>
+            {processingStatus !== 'idle' ? (
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <ActivityIndicator color="#fff" style={{marginRight: 10}} />
+                <Text style={styles.payButtonText}>
+                  {processingStatus === 'waking' ? 'Waking up secure server... (up to 60s)' : 'Processing...'}
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.payButtonText}>Save Default Payment Method</Text>
+            )}
           </TouchableOpacity>
         </View>
       )}
