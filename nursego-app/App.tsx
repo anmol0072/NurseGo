@@ -44,6 +44,15 @@ export default function App() {
       }
     };
     checkAuth();
+
+    // Prevent Render Free Tier from sleeping while the app is open
+    const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+    if (BASE_URL.includes('onrender.com')) {
+      const pingInterval = setInterval(() => {
+        fetch(`${BASE_URL}/health`).catch(() => {});
+      }, 10 * 60 * 1000); // Every 10 mins
+      return () => clearInterval(pingInterval);
+    }
   }, []);
 
   if (initialRoute === null) {
