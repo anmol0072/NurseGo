@@ -20,7 +20,9 @@ import PaymentScreen from './src/screens/PaymentScreen';
 import RatingScreen from './src/screens/RatingScreen';
 import BookingHistoryScreen from './src/screens/BookingHistoryScreen';
 import FindingNurseScreen from './src/screens/FindingNurseScreen';
-
+import OffersScreen from './src/screens/OffersScreen';
+import ReferralScreen from './src/screens/ReferralScreen';
+import EmergencyContactsScreen from './src/screens/EmergencyContactsScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
@@ -84,6 +86,9 @@ export default function App() {
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Payment" component={PaymentScreen} />
         <Stack.Screen name="Rating" component={RatingScreen} options={{ presentation: 'modal' }} />
+        <Stack.Screen name="Offers" component={OffersScreen} />
+        <Stack.Screen name="Referral" component={ReferralScreen} />
+        <Stack.Screen name="EmergencyContacts" component={EmergencyContactsScreen} />
       </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

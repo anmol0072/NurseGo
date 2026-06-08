@@ -10,6 +10,7 @@ export default function NurseDashboard({ navigation }: any) {
   const [isOnline, setIsOnline] = useState(false);
   const [incomingJob, setIncomingJob] = useState<boolean>(false);
   const [locationSet, setLocationSet] = useState(false);
+  const [isMapFullScreen, setIsMapFullScreen] = useState(false);
   const insets = useSafeAreaInsets();
   
   const mapRef = useRef<View>(null);
@@ -130,10 +131,17 @@ export default function NurseDashboard({ navigation }: any) {
           )}
           {locationSet && (
             <View style={styles.mapOverlayControls}>
-              <Text style={styles.mapOverlayText}>Broadcasting Location...</Text>
-              <TouchableOpacity style={styles.testBtnOverlay} onPress={triggerMockJob}>
-                <Text style={styles.testBtnText}>Test Incoming Job</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.mapOverlayText}>Broadcasting...</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <TouchableOpacity style={[styles.testBtnOverlay, { marginRight: 8 }]} onPress={triggerMockJob}>
+                  <Text style={styles.testBtnText}>Test Job</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.fullScreenBtn} onPress={() => setIsMapFullScreen(true)}>
+                  <Ionicons name="expand" size={20} color="#0f172a" />
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         </View>
@@ -180,12 +188,29 @@ export default function NurseDashboard({ navigation }: any) {
         navigation={navigation} 
       />
 
-      <ProfileMenu 
-        visible={isProfileMenuVisible} 
-        onClose={() => setProfileMenuVisible(false)} 
-        navigation={navigation} 
-        user={user} 
-      />
+      {isProfileMenuVisible && <ProfileMenu visible={true} onClose={() => setProfileMenuVisible(false)} navigation={navigation} user={user} />}
+
+      {/* Full Screen Map Modal */}
+      {isMapFullScreen && (
+        <View style={styles.fullScreenMapContainer}>
+          {Platform.OS === 'web' ? (
+            <iframe 
+              src="https://www.openstreetmap.org/export/embed.html?bbox=77.10%2C28.50%2C77.30%2C28.70&layer=mapnik"
+              style={{ position: 'absolute', width: '100%', height: '100%', border: 'none' }}
+            />
+          ) : (
+            <Image 
+              source={{ uri: 'https://cdn.pixabay.com/photo/2019/09/22/16/20/location-4496459_1280.png' }} 
+              style={{ ...StyleSheet.absoluteFill, width: '100%', height: '100%' }} 
+              resizeMode="cover"
+            />
+          )}
+          <TouchableOpacity style={[styles.fullScreenBackBtn, { top: Math.max(insets.top, 20) }]} onPress={() => setIsMapFullScreen(false)}>
+            <Ionicons name="arrow-back" size={28} color="#0f172a" />
+          </TouchableOpacity>
+        </View>
+      )}
+
     </SafeAreaView>
   );
 }
@@ -218,6 +243,9 @@ const styles = StyleSheet.create({
   mapOverlayControls: { position: 'absolute', bottom: 16, left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.9)', padding: 12, borderRadius: 16, zIndex: 1000 },
   mapOverlayText: { color: '#0f766e', fontWeight: '800', fontSize: 14 },
   testBtnOverlay: { backgroundColor: '#0f172a', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  fullScreenBtn: { backgroundColor: '#ffffff', width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  fullScreenMapContainer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: '#000' },
+  fullScreenBackBtn: { position: 'absolute', left: 20, width: 48, height: 48, backgroundColor: '#ffffff', borderRadius: 24, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 5, zIndex: 101 },
 
   alertCard: { backgroundColor: '#ffffff', borderRadius: 24, padding: 24, shadowColor: '#ef4444', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 8, borderWidth: 2, borderColor: '#fee2e2' },
   alertHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },

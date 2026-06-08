@@ -21,6 +21,7 @@ model User {
   uhid            String?  @unique // Unique Health ID for patients
   password        String?  // Hashed password
   googleId        String?  @unique // For Google Auth
+  twoFactorEnabled Boolean @default(false)
   
   // Nurse specific fields
   experience      Int?

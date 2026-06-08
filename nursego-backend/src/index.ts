@@ -4,6 +4,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.routes';
 import paymentsRoutes from './routes/payments.routes';
 import bookingsRoutes from './routes/bookings.routes';
+import settingsRoutes from './routes/settings.routes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/bookings', bookingsRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'NurseGo API is running smoothly' });

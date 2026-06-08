@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Dimensions, Animated, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, Dimensions, Animated, TouchableWithoutFeedback, Linking } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FeatureUnavailableModal from './FeatureUnavailableModal';
@@ -24,15 +25,25 @@ export default function SideMenu({ visible, onClose, navigation }: SideMenuProps
     { id: 'emergency', title: 'Emergency Contacts', icon: 'warning-outline' },
   ];
 
-  const handlePress = (id: string) => {
-    onClose();
-    if (id === 'home') {
-      // Already on home mostly
+  const handlePress = async (id: string) => {
+    if (id === 'logout') {
+      await AsyncStorage.removeItem('user');
+      onClose();
+      navigation.replace('Login');
+    } else if (id === 'offers') {
+      onClose();
+      navigation.navigate('Offers');
+    } else if (id === 'refer') {
+      onClose();
+      navigation.navigate('Referral');
+    } else if (id === 'emergency') {
+      onClose();
+      navigation.navigate('EmergencyContacts');
     } else if (id === 'support') {
-      import('react-native').then(({ Linking }) => {
-        Linking.openURL('https://nursenow.in');
-      });
+      onClose();
+      Linking.openURL('https://nursego.in');
     } else {
+      onClose();
       setModalVisible(true);
     }
   };

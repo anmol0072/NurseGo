@@ -1,20 +1,104 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch, ScrollView, TouchableOpacity, SafeAreaView, Platform, Alert, Linking } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Switch, ScrollView, TouchableOpacity, SafeAreaView, Platform, Alert, Linking, Modal, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import FeatureUnavailableModal from '../components/FeatureUnavailableModal';
 
 export default function SettingsScreen({ navigation }: any) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState({ title: '', message: '' });
 
-  const showModal = (title: string, message: string) => {
-    setModalData({ title, message });
-    setModalVisible(true);
-  };
   const [pushEnabled, setPushEnabled] = useState(true);
   const [emailEnabled, setEmailEnabled] = useState(true);
   const [smsEnabled, setSmsEnabled] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(true);
+
+  // New states for Password & 2FA
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userStr = await AsyncStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          if (user.twoFactorEnabled) {
+            setTwoFactorEnabled(true);
+          }
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleChangePassword = async () => {
+    if (!oldPassword || !newPassword) {
+      Alert.alert('Error', 'Please enter both old and new passwords.');
+      return;
+    }
+    try {
+      setIsUpdating(true);
+      const userStr = await AsyncStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      if (!user) return;
+
+      const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+      const res = await fetch(`${BASE_URL}/api/settings/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, oldPassword, newPassword })
+      });
+      const data = await res.json();
+      setIsUpdating(false);
+
+      if (data.success) {
+        Alert.alert('Success', 'Your password has been changed.');
+        setPasswordModalVisible(false);
+        setOldPassword('');
+        setNewPassword('');
+      } else {
+        Alert.alert('Error', data.message || 'Failed to change password.');
+      }
+    } catch (e) {
+      setIsUpdating(false);
+      Alert.alert('Error', 'An error occurred.');
+    }
+  };
+
+  const handleToggle2FA = async (val: boolean) => {
+    setTwoFactorEnabled(val);
+    try {
+      const userStr = await AsyncStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      if (!user) return;
+
+      const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+      const res = await fetch(`${BASE_URL}/api/settings/toggle-2fa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, enabled: val })
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Update local storage
+        user.twoFactorEnabled = val;
+        await AsyncStorage.setItem('user', JSON.stringify(user));
+        Alert.alert('Success', data.message);
+      } else {
+        setTwoFactorEnabled(!val); // revert
+        Alert.alert('Error', 'Failed to update 2FA status.');
+      }
+    } catch (e) {
+      setTwoFactorEnabled(!val);
+      Alert.alert('Error', 'Network error.');
+    }
+  };
 
   const Section = ({ title, children }: any) => (
     <View style={styles.section}>
@@ -70,14 +154,14 @@ export default function SettingsScreen({ navigation }: any) {
 
         <Section title="PRIVACY & SECURITY">
           <ToggleRow icon="location-outline" label="Location Services" value={locationEnabled} onValueChange={setLocationEnabled} />
-          <LinkRow icon="lock-closed-outline" label="Change Password" onPress={() => showModal('Change Password', 'This feature is coming soon!')} />
-          <LinkRow icon="shield-checkmark-outline" label="Two-Factor Authentication" onPress={() => showModal('2FA', 'Two-Factor Authentication is coming soon!')} isLast />
+          <LinkRow icon="lock-closed-outline" label="Change Password" onPress={() => setPasswordModalVisible(true)} />
+          <ToggleRow icon="shield-checkmark-outline" label="Two-Factor Authentication" value={twoFactorEnabled} onValueChange={handleToggle2FA} isLast />
         </Section>
 
         <Section title="ABOUT">
-          <LinkRow icon="document-text-outline" label="Terms of Service" onPress={() => Linking.openURL('https://nursenow.in/terms')} />
-          <LinkRow icon="shield-half-outline" label="Privacy Policy" onPress={() => Linking.openURL('https://nursenow.in/privacy')} />
-          <LinkRow icon="information-circle-outline" label="About NurseGo" onPress={() => Linking.openURL('https://nursenow.in')} isLast />
+          <LinkRow icon="document-text-outline" label="Terms of Service" onPress={() => Linking.openURL('https://nursego.in/terms')} />
+          <LinkRow icon="shield-half-outline" label="Privacy Policy" onPress={() => Linking.openURL('https://nursego.in/privacy')} />
+          <LinkRow icon="information-circle-outline" label="About NurseGo" onPress={() => Linking.openURL('https://nursego.in')} isLast />
         </Section>
 
         <View style={styles.deleteSection}>
@@ -85,8 +169,38 @@ export default function SettingsScreen({ navigation }: any) {
             <Text style={styles.deleteBtnText}>Delete Account</Text>
           </TouchableOpacity>
         </View>
-
       </ScrollView>
+
+      {/* Password Change Modal */}
+      <Modal visible={passwordModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Change Password</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="Current Password" 
+              secureTextEntry 
+              value={oldPassword} 
+              onChangeText={setOldPassword} 
+            />
+            <TextInput 
+              style={styles.input} 
+              placeholder="New Password" 
+              secureTextEntry 
+              value={newPassword} 
+              onChangeText={setNewPassword} 
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#e2e8f0' }]} onPress={() => setPasswordModalVisible(false)}>
+                <Text style={{ color: '#334155', fontWeight: 'bold' }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#14b8a6' }]} onPress={handleChangePassword} disabled={isUpdating}>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{isUpdating ? 'Saving...' : 'Save'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <FeatureUnavailableModal 
         visible={modalVisible} 
@@ -99,100 +213,27 @@ export default function SettingsScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    ...Platform.select({
-      web: { marginTop: 0 },
-      default: { marginTop: 20 }
-    })
-  },
-  backBtn: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#94a3b8',
-    marginBottom: 8,
-    marginLeft: 12,
-    letterSpacing: 0.5,
-  },
-  sectionCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  rowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  rowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  rowIcon: {
-    marginRight: 12,
-  },
-  rowLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#334155',
-  },
-  deleteSection: {
-    marginTop: 12,
-    marginBottom: 40,
-  },
-  deleteBtn: {
-    backgroundColor: '#fef2f2',
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#fee2e2',
-  },
-  deleteBtnText: {
-    color: '#ef4444',
-    fontSize: 16,
-    fontWeight: '600',
-  }
+  safeArea: { flex: 1, backgroundColor: '#f8fafc' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#ffffff', borderBottomWidth: 1, borderBottomColor: '#f1f5f9', ...Platform.select({ web: { marginTop: 0 }, default: { marginTop: 20 } }) },
+  backBtn: { padding: 8 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
+  scrollView: { flex: 1 },
+  scrollContent: { padding: 16, paddingBottom: 40 },
+  section: { marginBottom: 24 },
+  sectionTitle: { fontSize: 13, fontWeight: '700', color: '#94a3b8', marginBottom: 8, marginLeft: 12, letterSpacing: 0.5 },
+  sectionCard: { backgroundColor: '#ffffff', borderRadius: 16, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: '#f1f5f9' },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 16 },
+  rowBorder: { borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+  rowLeft: { flexDirection: 'row', alignItems: 'center' },
+  rowIcon: { marginRight: 12 },
+  rowLabel: { fontSize: 16, fontWeight: '500', color: '#334155' },
+  deleteSection: { marginTop: 12, marginBottom: 40 },
+  deleteBtn: { backgroundColor: '#fef2f2', paddingVertical: 16, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: '#fee2e2' },
+  deleteBtnText: { color: '#ef4444', fontSize: 16, fontWeight: '600' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
+  modalContainer: { backgroundColor: '#fff', padding: 24, borderRadius: 16 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 16, color: '#1e293b' },
+  input: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 16 },
+  modalButtons: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16, gap: 12 },
+  modalBtn: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 }
 });
