@@ -17,6 +17,7 @@ const SERVICES = [
   { id: 6, name: 'Physiotherapy', desc: 'Post-op or general mobility sessions', category: 'Care', time: '60 min', price: 1200, icon: 'body-outline', color: '#4f46e5', bg: '#eef2ff', rx: false },
   { id: 7, name: 'ECG at Home', desc: '12-lead ECG with cardiologist review', category: 'Diagnostic', time: '30 min', price: 800, icon: 'heart-outline', color: '#e11d48', bg: '#fff1f2', rx: true },
   { id: 8, name: 'Nebulization', desc: 'Respiratory therapy for asthma/COPD', category: 'Procedure', time: '20 min', price: 350, icon: 'cloud-outline', color: '#0891b2', bg: '#ecfeff', rx: true },
+  { id: 9, name: 'Vital Signs Check', desc: 'Temperature, BP, Pulse, Respiration', category: 'Diagnostic', time: '15 min', price: 199, icon: 'heart-half-outline', color: '#db2777', bg: '#fdf2f8', rx: false },
 ];
 
 export default function PatientDashboard({ navigation }: any) {
