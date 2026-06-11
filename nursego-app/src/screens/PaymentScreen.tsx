@@ -11,7 +11,7 @@ export default function PaymentScreen({ route, navigation }: any) {
   const [processingStatus, setProcessingStatus] = useState<'idle' | 'processing' | 'waking'>('idle');
 
   // If accessed from Profile, route.params might be undefined
-  const { total = 0, serviceName = 'Wallet Top-up', prescriptionUrl = null } = route?.params || {};
+  const { total = 0, serviceName = 'Wallet Top-up', prescriptionUrl = null, isEmergency = false } = route?.params || {};
   const isCheckoutFlow = total > 0;
 
   const handlePay = async () => {
@@ -34,12 +34,12 @@ export default function PaymentScreen({ route, navigation }: any) {
            const res = await fetch(`${BASE_URL}/api/bookings`, {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod, prescriptionUrl })
+             body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod, prescriptionUrl, isEmergency })
            });
            const data = await res.json();
            setProcessingStatus('idle');
            if (data.success) {
-             navigation.replace('Rating', { serviceName, total, paymentMethod: 'Cash on Arrival' });
+             navigation.replace('Tracking', { bookingId: data.booking.id });
            } else {
              Alert.alert('Booking Error', data.message || 'Failed to create booking.');
            }
@@ -94,13 +94,18 @@ export default function PaymentScreen({ route, navigation }: any) {
                            headers: { 'Content-Type': 'application/json' },
                            body: JSON.stringify(response)
                         });
-                        await fetch(`${BASE_URL}/api/bookings`, {
+                        const bookingRes = await fetch(`${BASE_URL}/api/bookings`, {
                            method: 'POST',
                            headers: { 'Content-Type': 'application/json' },
-                           body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod, prescriptionUrl })
+                           body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod, prescriptionUrl, isEmergency })
                         });
+                        const bookingData = await bookingRes.json();
                         setProcessingStatus('idle');
-                        navigation.replace('Rating', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
+                        if (bookingData.success) {
+                          navigation.replace('Tracking', { bookingId: bookingData.booking.id });
+                        } else {
+                          Alert.alert('Booking Error', 'Payment verified but booking creation failed.');
+                        }
                       } catch (err) {
                         setProcessingStatus('idle');
                         Alert.alert('Verification Error', 'Payment succeeded but verification failed.');
@@ -179,14 +184,19 @@ export default function PaymentScreen({ route, navigation }: any) {
              });
              
              // Create Booking
-             await fetch(`${BASE_URL}/api/bookings`, {
+             const bookingRes = await fetch(`${BASE_URL}/api/bookings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod, prescriptionUrl })
+                body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod, prescriptionUrl, isEmergency })
              });
+             const bookingData = await bookingRes.json();
              
              setProcessingStatus('idle');
-             navigation.replace('Rating', { serviceName, total, paymentMethod: selectedMethod.toUpperCase() });
+             if (bookingData.success) {
+               navigation.replace('Tracking', { bookingId: bookingData.booking.id });
+             } else {
+               Alert.alert('Booking Error', 'Payment verified but booking creation failed.');
+             }
 
            }).catch((error: any) => {
              setProcessingStatus('idle');

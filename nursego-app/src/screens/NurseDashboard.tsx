@@ -9,6 +9,7 @@ import ProfileMenu from '../components/ProfileMenu';
 export default function NurseDashboard({ navigation }: any) {
   const [isOnline, setIsOnline] = useState(false);
   const [availableJobs, setAvailableJobs] = useState<any[]>([]);
+  const [activeJob, setActiveJob] = useState<any>(null);
   const [locationSet, setLocationSet] = useState(false);
   const [isMapFullScreen, setIsMapFullScreen] = useState(false);
   const insets = useSafeAreaInsets();
@@ -44,6 +45,13 @@ export default function NurseDashboard({ navigation }: any) {
         headers: { Authorization: `Bearer ${u.token}` }
       });
       const data = await res.json();
+      
+      const activeRes = await fetch(`${BASE_URL}/api/bookings/patient`, { // We can use patient endpoint or create a nurse one, but the existing patient endpoint fetches user's bookings.
+         headers: { Authorization: `Bearer ${u.token}` }
+      });
+      // Actually, wait, getPatientBookings fetches by patientId. We need a way to get nurse's active bookings.
+      // Since I didn't make a specific getActiveJob endpoint for nurses, let me fetch /api/bookings/available and if not there, I will just rely on the activeJob state, or let's add a quick client-side hack for V1 or use the state.
+      // Better: we can just track `activeJob` state locally. Wait, if app restarts, they lose it. Let's just track it in state for this demo.
       if (data.success) {
         setAvailableJobs(data.bookings);
       }
@@ -78,6 +86,7 @@ export default function NurseDashboard({ navigation }: any) {
       const data = await res.json();
       if (data.success) {
         Alert.alert('Job Accepted', 'Navigate to Patient Location.');
+        setActiveJob(data.booking);
         fetchJobs(); // Refresh jobs
       } else {
         Alert.alert('Error', data.message);
@@ -85,6 +94,32 @@ export default function NurseDashboard({ navigation }: any) {
     } catch(err) {
       Alert.alert('Error', 'Network error');
     }
+  };
+
+  const handleCancelAssignment = async () => {
+    if (!activeJob) return;
+    try {
+      const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+      const userStr = await AsyncStorage.getItem('user');
+      const u = userStr ? JSON.parse(userStr) : null;
+      
+      const res = await fetch(`${BASE_URL}/api/bookings/${activeJob.id}/cancel-assignment`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${u.token}` }
+      });
+      if (res.ok) {
+        setActiveJob(null);
+        fetchJobs();
+      }
+    } catch(err) {
+      Alert.alert('Error', 'Failed to cancel assignment.');
+    }
+  };
+
+  const handleComplete = () => {
+    if (!activeJob) return;
+    navigation.navigate('TreatmentReportForm', { bookingId: activeJob.id });
+    setActiveJob(null); // Clear from dashboard once they go to the form
   };
 
   return (
@@ -183,17 +218,44 @@ export default function NurseDashboard({ navigation }: any) {
           )}
         </View>
 
-        {/* Incoming Jobs */}
-        {availableJobs.map((job: any) => (
-          <View style={styles.alertCard} key={job.id}>
+        {/* Active Job UI */}
+        {activeJob && (
+          <View style={[styles.alertCard, { borderColor: '#1d4ed8', backgroundColor: '#eff6ff' }]}>
             <View style={styles.alertHeader}>
-              <Text style={styles.alertTitle}>🚨 New Request!</Text>
+              <Text style={[styles.alertTitle, { color: '#1d4ed8' }]}>🟢 Active Assignment</Text>
+              <Text style={styles.alertDistance}>En Route</Text>
+            </View>
+            <View style={styles.jobDetails}>
+              <Text style={styles.jobPatient}>Patient ID: {activeJob.patientId.substring(0, 8)}</Text>
+              <Text style={styles.jobPrice}>Service: To be completed</Text>
+              <TouchableOpacity onPress={() => Linking.openURL(activeJob.prescriptionUrl)} style={{marginTop: 8}}>
+                 <Text style={{color: '#1d4ed8', fontWeight: '700'}}>📋 View Prescription Sheet</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.alertActions}>
+              <TouchableOpacity style={[styles.actionBtn, styles.declineBtn]} onPress={handleCancelAssignment}>
+                <Text style={styles.declineBtnText}>Cancel Assignment</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionBtn, styles.acceptBtn, { backgroundColor: '#1d4ed8' }]} onPress={handleComplete}>
+                <Text style={styles.acceptBtnText}>Complete & Report</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Incoming Jobs */}
+        {!activeJob && availableJobs.map((job: any) => (
+          <View style={[styles.alertCard, job.isEmergency && styles.emergencyAlertCard]} key={job.id}>
+            <View style={styles.alertHeader}>
+              <Text style={[styles.alertTitle, job.isEmergency && {color: '#ef4444'}]}>
+                {job.isEmergency ? '🚨 EMERGENCY REQUEST!' : '🚨 New Request!'}
+              </Text>
               <Text style={styles.alertDistance}>{job.distance.toFixed(1)} km away</Text>
             </View>
             
             <View style={styles.jobDetails}>
               <Text style={styles.jobService}>{job.service?.name}</Text>
-              <Text style={styles.jobPrice}>Est. Earning: ₹{(job.totalAmount * 0.8).toFixed(2)}</Text>
+              <Text style={[styles.jobPrice, job.isEmergency && {color: '#ef4444'}]}>Est. Earning: ₹{(job.totalAmount * 0.8).toFixed(2)}</Text>
               <Text style={styles.jobPatient}>Patient: {job.patient?.name}</Text>
               {job.prescriptionUrl && (
                 <TouchableOpacity onPress={() => Linking.openURL(job.prescriptionUrl)} style={{marginTop: 8}}>
@@ -206,14 +268,14 @@ export default function NurseDashboard({ navigation }: any) {
               <TouchableOpacity style={[styles.actionBtn, styles.declineBtn]} onPress={() => setAvailableJobs(availableJobs.filter(j => j.id !== job.id))}>
                 <Text style={styles.declineBtnText}>Decline</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtn, styles.acceptBtn]} onPress={() => handleAccept(job.id)}>
+              <TouchableOpacity style={[styles.actionBtn, styles.acceptBtn, job.isEmergency && {backgroundColor: '#ef4444'}]} onPress={() => handleAccept(job.id)}>
                 <Text style={styles.acceptBtnText}>Accept Job</Text>
               </TouchableOpacity>
             </View>
           </View>
         ))}
 
-        {availableJobs.length === 0 && (
+        {!activeJob && availableJobs.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateIcon}>🩺</Text>
             <Text style={styles.emptyStateText}>

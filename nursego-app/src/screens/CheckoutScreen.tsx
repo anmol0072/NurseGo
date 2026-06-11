@@ -18,7 +18,10 @@ export default function CheckoutScreen({ route, navigation }: any) {
   const [showBiodata, setShowBiodata] = useState(false);
   const [prescription, setPrescription] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const total = subtotal + gst + tipAmount;
+  const [isEmergency, setIsEmergency] = useState(false);
+
+  const emergencySurcharge = isEmergency ? 300 : 0;
+  const total = subtotal + gst + tipAmount + emergencySurcharge;
 
   const handleUploadPrescription = async () => {
     try {
@@ -75,7 +78,8 @@ export default function CheckoutScreen({ route, navigation }: any) {
       setIsUploading(false);
     }
 
-    navigation.navigate('Tracking', { total, serviceName, prescriptionUrl });
+    // Flow changed: Navigate to Payment FIRST, then track.
+    navigation.navigate('Payment', { total, serviceName, prescriptionUrl, isEmergency });
   };
 
   // Removed processing overlay since payment is moved to PaymentScreen
@@ -137,6 +141,23 @@ export default function CheckoutScreen({ route, navigation }: any) {
             <Text style={styles.totalText}>Subtotal</Text>
             <Text style={styles.totalPrice}>₹{(subtotal + gst).toFixed(2)}</Text>
           </View>
+        </View>
+
+        {/* Emergency Toggle */}
+        <View style={[styles.card, isEmergency && styles.emergencyCard]}>
+           <View style={styles.emergencyHeader}>
+             <Ionicons name="alert-circle" size={24} color={isEmergency ? "#ef4444" : "#64748b"} />
+             <View style={{flex: 1, marginLeft: 12}}>
+               <Text style={[styles.emergencyTitle, isEmergency && {color: '#ef4444'}]}>Emergency Request</Text>
+               <Text style={styles.emergencySub}>Nurse arrives in 60-90 mins (+₹300)</Text>
+             </View>
+             <TouchableOpacity 
+               style={[styles.toggleBtn, isEmergency && styles.toggleBtnActive]}
+               onPress={() => setIsEmergency(!isEmergency)}
+             >
+               <View style={[styles.toggleDot, isEmergency && styles.toggleDotActive]} />
+             </TouchableOpacity>
+           </View>
         </View>
 
         {/* Prescription Upload Section */}
@@ -344,6 +365,50 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 8,
     textDecorationLine: 'underline',
+  },
+  emergencyCard: {
+    borderColor: '#fca5a5',
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+  },
+  emergencyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  emergencyTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  emergencySub: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  toggleBtn: {
+    width: 48,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#cbd5e1',
+    padding: 2,
+    justifyContent: 'center',
+  },
+  toggleBtnActive: {
+    backgroundColor: '#ef4444',
+  },
+  toggleDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toggleDotActive: {
+    transform: [{ translateX: 20 }],
   },
   processingText: { fontSize: 20, fontWeight: '800', color: '#0f172a', marginTop: 24 },
   processingSub: { fontSize: 15, color: '#94a3b8', marginTop: 8 },

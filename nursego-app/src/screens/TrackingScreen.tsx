@@ -1,19 +1,76 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Platform, Share, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
 export default function TrackingScreen({ route, navigation }: any) {
-  const mapRef = useRef<View>(null);
+  const { bookingId } = route.params || {};
+  const [booking, setBooking] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Removed broken Google Maps API Initialization
+  useEffect(() => {
+    if (!bookingId) return;
+    
+    const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+    
+    const fetchBooking = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/api/bookings/${bookingId}`);
+        const data = await res.json();
+        if (data.success) {
+          setBooking(data.booking);
+          // If COMPLETED, navigate to Rating immediately
+          if (data.booking.status === 'COMPLETED') {
+             navigation.replace('Rating', { 
+               serviceName: data.booking.service.name, 
+               total: data.booking.totalAmount, 
+               paymentMethod: data.booking.paymentMethod 
+             });
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooking();
+    // Poll every 5 seconds for live tracking and status updates
+    const interval = setInterval(fetchBooking, 5000);
+    return () => clearInterval(interval);
+  }, [bookingId]);
+
+  const handleShare = async () => {
+    try {
+      // Family Dashboard Deep Link
+      const url = `nursego://family/${bookingId}`;
+      await Share.share({
+        message: `Track my NurseNow visit live and view reports here: ${url}`,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#1d4ed8" />
+        <Text style={{marginTop: 12, color: '#64748b'}}>Loading Live Tracking...</Text>
+      </View>
+    );
+  }
+
+  const isPending = !booking || booking.status === 'PENDING';
+  const nurse = booking?.nurse;
 
   return (
     <View style={styles.container}>
-      {/* Map Fallback */}
+      {/* Map Background */}
       {Platform.OS === 'web' ? (
         <iframe 
           src="https://www.openstreetmap.org/export/embed.html?bbox=77.10%2C28.50%2C77.30%2C28.70&layer=mapnik"
@@ -29,13 +86,15 @@ export default function TrackingScreen({ route, navigation }: any) {
 
       {/* Back Button Overlay */}
       <SafeAreaView style={styles.topOverlay} pointerEvents="box-none">
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('PatientDashboard')}>
           <Ionicons name="arrow-back" size={24} color="#0f172a" />
         </TouchableOpacity>
         
-        <View style={styles.etaBadge}>
-          <Text style={styles.etaText}>Arriving in 14 min</Text>
-        </View>
+        {!isPending && (
+          <View style={styles.etaBadge}>
+            <Text style={styles.etaText}>ETA: 14 mins</Text>
+          </View>
+        )}
       </SafeAreaView>
 
       {/* Bottom Information Sheet */}
@@ -49,40 +108,64 @@ export default function TrackingScreen({ route, navigation }: any) {
           <View style={styles.handleBar} />
           
           <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>En Route to Patient</Text>
-            <View style={styles.pinContainer}>
-              <Text style={styles.pinLabel}>Visit PIN</Text>
-              <Text style={styles.pinValue}>8492</Text>
-            </View>
+            <Text style={styles.sheetTitle}>
+              {isPending ? 'Looking for a Nurse...' : 'Nurse En Route'}
+            </Text>
+            <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
+              <Ionicons name="share-social" size={20} color="#1d4ed8" />
+              <Text style={styles.shareText}>Share to Family</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.nurseInfoCard}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>S</Text>
+          {isPending ? (
+            <View style={styles.pendingContainer}>
+              <ActivityIndicator size="large" color="#1d4ed8" />
+              <Text style={styles.pendingText}>Alerting nearby certified nurses for your {booking?.service?.name || 'service'}...</Text>
             </View>
-            <View style={styles.nurseDetails}>
-              <Text style={styles.nurseName}>Sarah Jenkins</Text>
-              <Text style={styles.nurseRole}>Certified IV Specialist</Text>
-              <View style={styles.ratingRow}>
-                <Ionicons name="star" size={14} color="#fbbf24" />
-                <Text style={styles.ratingText}>4.9 (120 visits)</Text>
+          ) : (
+            <View style={styles.nurseInfoCard}>
+              <Image 
+                source={{uri: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=200&h=200'}} 
+                style={styles.avatar} 
+              />
+              <View style={styles.nurseDetails}>
+                <Text style={styles.nurseName}>{nurse?.name || 'Asha Johnson'}</Text>
+                <Text style={styles.nurseRole}>{nurse?.skills || 'Certified IV Specialist'} • {nurse?.experience || 5} yrs exp</Text>
+                
+                <View style={styles.badgesRow}>
+                  <View style={styles.badge}>
+                    <Ionicons name="checkmark-circle" size={12} color="#059669" />
+                    <Text style={styles.badgeText}>INC Verified</Text>
+                  </View>
+                  <View style={styles.badge}>
+                    <Ionicons name="shield-checkmark" size={12} color="#059669" />
+                    <Text style={styles.badgeText}>BG Checked</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.ratingRow}>
+                  <Ionicons name="star" size={14} color="#fbbf24" />
+                  <Text style={styles.ratingText}>{(nurse?.rating || 4.9).toFixed(1)} Rating</Text>
+                </View>
               </View>
             </View>
-          </View>
+          )}
 
-          <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Chat')}>
-              <Ionicons name="chatbubble" size={24} color="#1d4ed8" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="call" size={24} color="#1d4ed8" />
-            </TouchableOpacity>
+          {!isPending && (
+            <View style={styles.actionRow}>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="chatbubble" size={24} color="#1d4ed8" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="call" size={24} color="#1d4ed8" />
+              </TouchableOpacity>
 
-            <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate('Payment', route?.params || {})}>
-              <Text style={styles.primaryButtonText}>Finish Service</Text>
-            </TouchableOpacity>
-          </View>
+              <View style={styles.waitingBtn}>
+                 <Text style={styles.waitingText}>Waiting for Nurse to arrive</Text>
+              </View>
+            </View>
+          )}
         </View>
       </View>
     </View>
@@ -90,10 +173,7 @@ export default function TrackingScreen({ route, navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#e2e8f0',
-  },
+  container: { flex: 1, backgroundColor: '#e2e8f0' },
   topOverlay: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -122,89 +202,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 100,
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
   },
-  etaText: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 15,
-  },
-  markerContainer: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 5,
-  },
-  homeMarker: {
-    backgroundColor: '#0f172a',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  pulseRing: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(15, 118, 110, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(15, 118, 110, 0.5)',
-  },
-  nurseMarker: {
-    backgroundColor: '#0f766e',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#fff',
-    shadowColor: '#0f766e',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  nurseTag: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginTop: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  nurseTagText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  bottomSheet: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    zIndex: 20,
-  },
-  gradientTop: {
-    height: 40,
-    width: '100%',
-  },
+  etaText: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  bottomSheet: { position: 'absolute', bottom: 0, width: '100%', zIndex: 20 },
+  gradientTop: { height: 40, width: '100%' },
   sheetContent: {
     backgroundColor: '#fff',
     borderTopLeftRadius: 32,
@@ -218,44 +219,13 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 20,
   },
-  handleBar: {
-    width: 40,
-    height: 5,
-    backgroundColor: '#e2e8f0',
-    borderRadius: 3,
-    alignSelf: 'center',
-    marginBottom: 24,
-  },
-  sheetHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  sheetTitle: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#0f172a',
-  },
-  pinContainer: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  pinLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#64748b',
-    textTransform: 'uppercase',
-  },
-  pinValue: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#1d4ed8',
-    letterSpacing: 2,
-  },
+  handleBar: { width: 40, height: 5, backgroundColor: '#e2e8f0', borderRadius: 3, alignSelf: 'center', marginBottom: 24 },
+  sheetHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  sheetTitle: { fontSize: 22, fontWeight: '900', color: '#0f172a' },
+  shareBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#eff6ff', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
+  shareText: { color: '#1d4ed8', fontWeight: '700', fontSize: 13, marginLeft: 6 },
+  pendingContainer: { alignItems: 'center', paddingVertical: 20 },
+  pendingText: { color: '#64748b', fontSize: 15, marginTop: 16, textAlign: 'center' },
   nurseInfoCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -266,69 +236,17 @@ const styles = StyleSheet.create({
     borderColor: '#f1f5f9',
     marginBottom: 24,
   },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#3b82f6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  avatarText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '800',
-  },
-  nurseDetails: {
-    flex: 1,
-  },
-  nurseName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#0f172a',
-    marginBottom: 2,
-  },
-  nurseRole: {
-    fontSize: 14,
-    color: '#64748b',
-    fontWeight: '500',
-    marginBottom: 6,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
-    fontSize: 13,
-    color: '#475569',
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#eff6ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  primaryButton: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
+  avatar: { width: 64, height: 64, borderRadius: 32, marginRight: 16 },
+  nurseDetails: { flex: 1 },
+  nurseName: { fontSize: 18, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
+  nurseRole: { fontSize: 13, color: '#64748b', fontWeight: '500', marginBottom: 8 },
+  badgesRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 6 },
+  badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ecfdf5', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginRight: 6 },
+  badgeText: { fontSize: 10, fontWeight: '700', color: '#059669', marginLeft: 4 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center' },
+  ratingText: { fontSize: 13, color: '#475569', fontWeight: '600', marginLeft: 4 },
+  actionRow: { flexDirection: 'row', alignItems: 'center' },
+  iconButton: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#eff6ff', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  waitingBtn: { flex: 1, backgroundColor: '#e2e8f0', height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  waitingText: { color: '#64748b', fontSize: 14, fontWeight: '700' },
 });

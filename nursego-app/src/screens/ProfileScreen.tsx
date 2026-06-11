@@ -20,7 +20,8 @@ export default function ProfileScreen({ navigation }: any) {
     license: 'SNC-849302',
     education: 'B.Sc Nursing',
     experience: '5 Years',
-    availability: 'Mon-Fri, 9AM-5PM'
+    availability: 'Mon-Fri, 9AM-5PM',
+    abhaId: 'ABHA-XXXX-XXXX-XXXX'
   });
   
   const [editForm, setEditForm] = useState(profileData);
@@ -179,6 +180,10 @@ export default function ProfileScreen({ navigation }: any) {
                   <Text style={styles.medicalLabel}>Allergies</Text>
                   <Text style={styles.medicalValue}>{profileData.allergies}</Text>
                 </View>
+                <View style={[styles.medicalItem, { flex: 1 }]}>
+                  <Text style={styles.medicalLabel}>ABHA ID (Ayushman Bharat)</Text>
+                  <Text style={[styles.medicalValue, { color: '#059669' }]}>{profileData.abhaId}</Text>
+                </View>
               </View>
             </View>
           )}
@@ -293,6 +298,9 @@ export default function ProfileScreen({ navigation }: any) {
 
                   <Text style={styles.inputLabel}>Weight</Text>
                   <TextInput style={styles.input} value={editForm.weight} onChangeText={(text) => setEditForm({...editForm, weight: text})} />
+
+                  <Text style={styles.inputLabel}>ABHA ID (Ayushman Bharat)</Text>
+                  <TextInput style={styles.input} value={editForm.abhaId} onChangeText={(text) => setEditForm({...editForm, abhaId: text})} placeholder="ABHA-XXXX-XXXX-XXXX" />
                 </>
               )}
             </ScrollView>

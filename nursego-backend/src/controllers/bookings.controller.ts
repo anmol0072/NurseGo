@@ -129,3 +129,120 @@ export const completeBooking = async (req: Request, res: Response): Promise<void
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+export const getBooking = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        service: true,
+        nurse: true,
+        patient: true,
+        treatmentReport: true,
+        review: true
+      }
+    });
+
+    if (!booking) {
+      res.status(404).json({ success: false, message: 'Booking not found' });
+      return;
+    }
+    res.json({ success: true, booking });
+  } catch (error) {
+    console.error('Get Booking Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const cancelAssignment = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    
+    // Reset the booking to PENDING and remove the nurse
+    const booking = await prisma.booking.update({
+      where: { id },
+      data: {
+        status: 'PENDING',
+        nurseId: null
+      }
+    });
+
+    res.json({ success: true, booking });
+  } catch (error) {
+    console.error('Cancel Assignment Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const updateNurseLocation = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // @ts-ignore
+    const nurseId = req.user?.userId;
+    const { lat, lng } = req.body;
+
+    if (!nurseId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: nurseId },
+      data: { currentLat: lat, currentLng: lng }
+    });
+
+    res.json({ success: true, user: updatedUser });
+  } catch (error) {
+    console.error('Update Nurse Location Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const createTreatmentReport = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params; // booking id
+    const { bp, pulse, temperature, procedureDone, medicinesGiven, woundImageUrls, notes, patientSignatureUrl } = req.body;
+
+    const report = await prisma.treatmentReport.create({
+      data: {
+        bookingId: id,
+        bp, pulse, temperature, procedureDone, medicinesGiven, woundImageUrls, notes, patientSignatureUrl
+      }
+    });
+
+    // Also mark booking as COMPLETED
+    await prisma.booking.update({
+      where: { id },
+      data: { status: 'COMPLETED' }
+    });
+
+    res.json({ success: true, report });
+  } catch (error) {
+    console.error('Create Treatment Report Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const createReview = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { bookingId, nurseId, rating, comment } = req.body;
+
+    const review = await prisma.review.create({
+      data: { bookingId, nurseId, rating, comment }
+    });
+
+    // Recalculate average rating for the nurse
+    const allReviews = await prisma.review.findMany({ where: { nurseId } });
+    const avgRating = allReviews.reduce((acc, curr) => acc + curr.rating, 0) / allReviews.length;
+
+    await prisma.user.update({
+      where: { id: nurseId },
+      data: { rating: avgRating }
+    });
+
+    res.json({ success: true, review });
+  } catch (error) {
+    console.error('Create Review Error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};

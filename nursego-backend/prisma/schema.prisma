@@ -22,11 +22,15 @@ model User {
   password        String?  // Hashed password
   googleId        String?  @unique // For Google Auth
   twoFactorEnabled Boolean @default(false)
+  abhaId          String?  @unique // For ABDM Integration
   
   // Nurse specific fields
   experience      Int?
   rating          Float?   @default(0)
   isVerified      Boolean  @default(false)
+  backgroundVerified Boolean @default(false)
+  incRegistrationNumber String? @unique
+  skills          String?  // JSON or comma separated
   isBlacklisted   Boolean  @default(false)
   currentLat      Float?
   currentLng      Float?
@@ -37,6 +41,7 @@ model User {
   patientBookings Booking[] @relation("PatientBookings")
   nurseBookings   Booking[] @relation("NurseBookings")
   documents       Document[]
+  reviews         Review[]  @relation("NurseReviews")
 }
 
 model Document {
@@ -71,6 +76,9 @@ model Booking {
   status         String        @default("PENDING")
   totalAmount    Float         // Computed total amount
   distance       Float         // Distance in km
+  isEmergency    Boolean       @default(false)
+  patientLat     Float?
+  patientLng     Float?
   
   prescriptionUrl String?
   paymentStatus   String       @default("PENDING") // PENDING, SUCCESS, FAILED
@@ -78,4 +86,33 @@ model Booking {
   
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  
+  treatmentReport TreatmentReport?
+  review          Review?
+}
+
+model TreatmentReport {
+  id              String   @id @default(uuid())
+  bookingId       String   @unique
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  bp              String?
+  pulse           String?
+  temperature     String?
+  procedureDone   String?
+  medicinesGiven  String?
+  woundImageUrls  String?  // JSON string array
+  notes           String?
+  patientSignatureUrl String?
+  createdAt       DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  nurseId   String
+  nurse     User     @relation("NurseReviews", fields: [nurseId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
 }
