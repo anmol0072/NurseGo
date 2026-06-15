@@ -100,7 +100,7 @@ export default function VideoConsultScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   remoteVideo: { flex: 1, width: '100%', height: '100%' },
-  gradientOverlay: { ...StyleSheet.absoluteFillObject },
+  gradientOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   safeArea: { flex: 1, justifyContent: 'space-between' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 10 },
   iconBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   nurseRole: { color: '#cbd5e1', fontSize: 15, fontWeight: '600', marginTop: 4 },
   localVideoContainer: { position: 'absolute', right: 20, bottom: 120, width: 100, height: 150, borderRadius: 16, overflow: 'hidden', borderWidth: 2, borderColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 10, elevation: 10 },
   localVideo: { width: '100%', height: '100%' },
-  controlsRow: { flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)', paddingVertical: 16, borderRadius: 40, backdropFilter: 'blur(10px)' },
+  controlsRow: { flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)', paddingVertical: 16, borderRadius: 40 },
   controlBtn: { width: 60, height: 60, borderRadius: 30, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   controlBtnActive: { backgroundColor: '#fff' },
   endCallBtn: { backgroundColor: '#ef4444', width: 64, height: 64, borderRadius: 32 }

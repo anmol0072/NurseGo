@@ -410,4 +410,9 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 16,
   },
+  emergencyAlertCard: {
+    borderColor: '#ef4444',
+    borderWidth: 2,
+    backgroundColor: '#fef2f2',
+  }
 });
