@@ -207,6 +207,22 @@ export default function PatientDashboard({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
+        {/* Chronic Care Banner (Phase 2 Additions) */}
+        <TouchableOpacity 
+          style={styles.chronicBanner}
+          onPress={() => navigation.navigate('ChronicDisease')}
+          activeOpacity={0.9}
+        >
+          <View style={styles.chronicIconBox}>
+             <Ionicons name="medical" size={28} color="#0f766e" />
+          </View>
+          <View style={{ flex: 1, marginLeft: 16 }}>
+             <Text style={styles.chronicTitle}>Chronic Care Hub</Text>
+             <Text style={styles.chronicSub}>Manage Diabetes, Hypertension & Asthma.</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#0f766e" />
+        </TouchableOpacity>
+
         {/* Recovery Packages */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recovery Packages</Text>
@@ -337,10 +353,14 @@ const styles = StyleSheet.create({
   carePlusBadgeText: { fontSize: 10, fontWeight: '800', color: '#b45309' },
   carePlusTitle: { fontSize: 20, fontWeight: '900', color: '#60a5fa', marginBottom: 4 },
   carePlusSub: { color: '#bfdbfe', fontSize: 13, lineHeight: 18 },
-  featuresGrid: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 32 },
+  featuresGrid: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 24 },
   featureItem: { alignItems: 'center', width: 70 },
   featureIconBox: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   featureItemText: { fontSize: 12, fontWeight: '600', color: '#475569', textAlign: 'center' },
+  chronicBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ccfbf1', marginHorizontal: 20, marginBottom: 32, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#99f6e4' },
+  chronicIconBox: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  chronicTitle: { fontSize: 16, fontWeight: '800', color: '#0f766e', marginBottom: 2 },
+  chronicSub: { fontSize: 12, color: '#115e59' },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingHorizontal: 20, marginBottom: 16 },
   sectionTitle: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
   sectionSubtitle: { fontSize: 14, color: '#64748b', fontWeight: '500' },
