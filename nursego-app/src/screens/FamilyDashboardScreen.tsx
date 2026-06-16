@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -91,7 +91,10 @@ export default function FamilyDashboardScreen({ navigation }: any) {
           </View>
         ))}
 
-        <TouchableOpacity style={styles.inviteCard}>
+        <TouchableOpacity 
+          style={styles.inviteCard}
+          onPress={() => Alert.alert('Invite Link Generated', 'Share this secure tracking link with your family member via WhatsApp.')}
+        >
           <View style={styles.inviteIcon}>
             <Ionicons name="link" size={24} color="#0f766e" />
           </View>
