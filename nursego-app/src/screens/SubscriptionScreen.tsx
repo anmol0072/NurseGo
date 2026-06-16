@@ -19,7 +19,7 @@ export default function SubscriptionScreen({ navigation }: any) {
           user.isSubscribed = true;
           await AsyncStorage.setItem('user', JSON.stringify(user));
         }
-        Alert.alert('Welcome to Care+!', 'You are now a NurseNow Care+ member. Enjoy your priority booking and 10% discounts!');
+        Alert.alert('Welcome to Care+!', 'You are now a NurseGo Care+ member. Enjoy your priority booking and 10% discounts!');
         navigation.goBack();
       } catch (e) {
          console.error(e);
@@ -46,7 +46,7 @@ export default function SubscriptionScreen({ navigation }: any) {
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.brandTitle}>NurseNow <Text style={styles.brandPlus}>Care+</Text></Text>
+          <Text style={styles.brandTitle}>NurseGo <Text style={styles.brandPlus}>Care+</Text></Text>
           <Text style={styles.subtitle}>The ultimate healthcare membership for your family.</Text>
 
           <View style={styles.priceContainer}>

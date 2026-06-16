@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 export default function VideoConsultScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const [seconds, setSeconds] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [facing, setFacing] = useState<'front' | 'back'>('front');
+  const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => {
+    if (!permission?.granted) {
+      requestPermission();
+    }
     const interval = setInterval(() => {
       setSeconds(prev => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [permission]);
 
   const formatTime = (totalSeconds: number) => {
     const m = Math.floor(totalSeconds / 60);
@@ -45,7 +51,7 @@ export default function VideoConsultScreen({ navigation }: any) {
                <View style={styles.recordingDot} />
                <Text style={styles.timerText}>{formatTime(seconds)}</Text>
              </View>
-             <TouchableOpacity style={styles.iconBtn}>
+             <TouchableOpacity style={styles.iconBtn} onPress={() => setFacing(f => f === 'front' ? 'back' : 'front')}>
                <Ionicons name="camera-reverse" size={24} color="#fff" />
              </TouchableOpacity>
            </View>
@@ -58,10 +64,14 @@ export default function VideoConsultScreen({ navigation }: any) {
 
               {/* Local Video Feed (Patient) */}
               <View style={styles.localVideoContainer}>
-                 {!isVideoOff ? (
-                   <Image 
-                     source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300' }} 
+                 {!permission ? (
+                   <View style={[styles.localVideo, { backgroundColor: '#334155', alignItems: 'center', justifyContent: 'center' }]}>
+                     <ActivityIndicator color="#fff" />
+                   </View>
+                 ) : (!isVideoOff && permission.granted) ? (
+                   <CameraView 
                      style={styles.localVideo} 
+                     facing={facing} 
                    />
                  ) : (
                    <View style={[styles.localVideo, { backgroundColor: '#334155', alignItems: 'center', justifyContent: 'center' }]}>

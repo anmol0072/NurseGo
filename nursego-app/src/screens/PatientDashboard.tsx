@@ -172,7 +172,7 @@ export default function PatientDashboard({ navigation }: any) {
           >
             <View style={styles.carePlusContent}>
               <View style={styles.carePlusBadge}><Text style={styles.carePlusBadgeText}>NEW</Text></View>
-              <Text style={styles.carePlusTitle}>NurseNow <Text style={{color: '#fff'}}>Care+</Text></Text>
+              <Text style={styles.carePlusTitle}>NurseGo <Text style={{color: '#fff'}}>Care+</Text></Text>
               <Text style={styles.carePlusSub}>Get priority booking & 10% off every service.</Text>
             </View>
             <Ionicons name="chevron-forward" size={24} color="#fff" />

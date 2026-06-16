@@ -49,7 +49,7 @@ export default function TrackingScreen({ route, navigation }: any) {
       // Family Dashboard Deep Link
       const url = `nursego://family/${bookingId}`;
       await Share.share({
-        message: `Track my NurseNow visit live and view reports here: ${url}`,
+        message: `Track my NurseGo visit live and view reports here: ${url}`,
       });
     } catch (error) {
       console.error(error);

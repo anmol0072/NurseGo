@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export default function AIChatScreen({ navigation }: any) {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hi! I'm NurseNow AI. I can explain your procedures, help you understand discharge notes, or answer general health questions.", sender: 'ai' }
+    { id: 1, text: "Hi! I'm NurseGo AI. I can explain your procedures, help you understand discharge notes, or answer general health questions.", sender: 'ai' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -16,7 +16,7 @@ export default function AIChatScreen({ navigation }: any) {
     "injection": "After an IM injection, you may experience mild soreness. Do not massage the area vigorously. Apply a cold compress if needed. If redness persists for over 24 hours, contact your nurse.",
     "catheter": "Catheter care is important. Always keep the drainage bag below bladder level to prevent backflow. Wash the area daily with mild soap and water.",
     "wound": "Keep your dressing dry. If it gets wet or loose, book a 'Wound Dressing' service so a nurse can properly change it to avoid infection.",
-    "default": "That's a great question! For a detailed clinical answer, I recommend booking a Free Telehealth Consult (included in NurseNow Care+) or asking your assigned nurse."
+    "default": "That's a great question! For a detailed clinical answer, I recommend booking a Free Telehealth Consult (included in NurseGo Care+) or asking your assigned nurse."
   };
 
   const handleSend = () => {

@@ -71,7 +71,10 @@ export default function ChronicDiseaseScreen({ navigation }: any) {
               <Text style={styles.planTitle}>Weekly Nurse Check-in</Text>
               <Text style={styles.planDesc}>A certified nurse visits every Sunday to check vitals and adjust medication.</Text>
            </View>
-           <TouchableOpacity style={styles.actionBtn}>
+           <TouchableOpacity 
+             style={styles.actionBtn}
+             onPress={() => navigation.navigate('FindingNurse', { serviceName: 'Weekly Nurse Check-in', basePrice: 400, distance: 2.5 })}
+           >
              <Text style={styles.actionBtnText}>Book</Text>
            </TouchableOpacity>
         </View>
@@ -84,7 +87,10 @@ export default function ChronicDiseaseScreen({ navigation }: any) {
               <Text style={styles.planTitle}>Dietary Consultation</Text>
               <Text style={styles.planDesc}>Review your {activeTab.toLowerCase()} diet plan with our nutritionist.</Text>
            </View>
-           <TouchableOpacity style={styles.actionBtn}>
+           <TouchableOpacity 
+             style={styles.actionBtn}
+             onPress={() => navigation.navigate('FindingNurse', { serviceName: 'Dietary Consultation', basePrice: 600, distance: 4.2 })}
+           >
              <Text style={styles.actionBtnText}>Book</Text>
            </TouchableOpacity>
         </View>
@@ -97,7 +103,10 @@ export default function ChronicDiseaseScreen({ navigation }: any) {
               <Text style={styles.planTitle}>Monthly Report PDF</Text>
               <Text style={styles.planDesc}>Share this 30-day trend report with your primary doctor.</Text>
            </View>
-           <TouchableOpacity style={styles.actionBtn}>
+           <TouchableOpacity 
+             style={styles.actionBtn}
+             onPress={() => navigation.navigate('HealthRecords')}
+           >
              <Text style={styles.actionBtnText}>View</Text>
            </TouchableOpacity>
         </View>

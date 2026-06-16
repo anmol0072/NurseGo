@@ -25,7 +25,7 @@ export default function FamilyDashboardScreen({ navigation }: any) {
         <View style={styles.premiumBanner}>
           <Ionicons name="shield-checkmark" size={24} color="#fff" />
           <View style={{ marginLeft: 12, flex: 1 }}>
-            <Text style={styles.bannerTitle}>NurseNow Care+ Active</Text>
+            <Text style={styles.bannerTitle}>NurseGo Care+ Active</Text>
             <Text style={styles.bannerDesc}>You are receiving real-time alerts for all linked family members.</Text>
           </View>
         </View>
@@ -73,11 +73,17 @@ export default function FamilyDashboardScreen({ navigation }: any) {
             )}
 
             <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.actionBtn}>
+              <TouchableOpacity 
+                style={styles.actionBtn}
+                onPress={() => navigation.navigate('HealthRecords')}
+              >
                 <Ionicons name="document-text-outline" size={20} color="#1d4ed8" />
                 <Text style={styles.actionText}>Health Reports</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionBtn}>
+              <TouchableOpacity 
+                style={styles.actionBtn}
+                onPress={() => navigation.navigate('Medication')}
+              >
                 <Ionicons name="medical-outline" size={20} color="#1d4ed8" />
                 <Text style={styles.actionText}>Medications</Text>
               </TouchableOpacity>

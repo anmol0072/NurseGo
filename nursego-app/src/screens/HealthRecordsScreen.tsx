@@ -60,7 +60,7 @@ export default function HealthRecordsScreen({ navigation }: any) {
         </head>
         <body>
           <div class="header">
-            <div class="logo">NurseNow</div>
+            <div class="logo">NurseGo</div>
             <div class="title">Digital Treatment Report</div>
           </div>
           
@@ -80,7 +80,7 @@ export default function HealthRecordsScreen({ navigation }: any) {
           <div class="row"><div class="label">Nurse Notes:</div><div class="value">${report.notes || 'None'}</div></div>
           
           <div class="footer">
-            Generated securely by NurseNow App.<br/>
+            Generated securely by NurseGo App.<br/>
             ABDM Health Record Ready.
           </div>
         </body>
