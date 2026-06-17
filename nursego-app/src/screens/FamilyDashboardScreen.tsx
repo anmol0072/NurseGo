@@ -22,13 +22,17 @@ export default function FamilyDashboardScreen({ navigation }: any) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.premiumBanner}>
+        <TouchableOpacity 
+          style={styles.premiumBanner}
+          onPress={() => navigation.navigate('Subscription')}
+          activeOpacity={0.9}
+        >
           <Ionicons name="shield-checkmark" size={24} color="#fff" />
           <View style={{ marginLeft: 12, flex: 1 }}>
             <Text style={styles.bannerTitle}>NurseGo Care+ Active</Text>
             <Text style={styles.bannerDesc}>You are receiving real-time alerts for all linked family members.</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Linked Loved Ones</Text>
 

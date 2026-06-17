@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function TreatmentReportForm({ route, navigation }: any) {
   const { bookingId } = route.params || {};
@@ -13,7 +14,22 @@ export default function TreatmentReportForm({ route, navigation }: any) {
   const [procedureDone, setProcedureDone] = useState('');
   const [medicinesGiven, setMedicinesGiven] = useState('');
   const [notes, setNotes] = useState('');
+  const [beforeImage, setBeforeImage] = useState<string | null>(null);
+  const [afterImage, setAfterImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const pickImage = async (setImage: (uri: string) => void) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!bp || !pulse || !temperature || !procedureDone) {
@@ -42,7 +58,7 @@ export default function TreatmentReportForm({ route, navigation }: any) {
           procedureDone,
           medicinesGiven,
           notes,
-          woundImageUrls: '[]', // Placeholder for actual image uploads
+          woundImageUrls: JSON.stringify({ before: beforeImage, after: afterImage }),
           patientSignatureUrl: 'verified_digitally' // Placeholder
         })
       });
@@ -109,6 +125,37 @@ export default function TreatmentReportForm({ route, navigation }: any) {
           <TextInput style={styles.textArea} placeholder="Patient responded well to treatment..." value={notes} onChangeText={setNotes} multiline />
         </View>
 
+        <Text style={styles.sectionTitle}>Wound / Condition Images</Text>
+        <View style={styles.row}>
+          <View style={[styles.inputGroup, { alignItems: 'center' }]}>
+            <Text style={styles.label}>Before Treatment</Text>
+            <TouchableOpacity style={styles.imagePickerBtn} onPress={() => pickImage(setBeforeImage)}>
+              {beforeImage ? (
+                <Image source={{ uri: beforeImage }} style={styles.previewImage} />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="camera" size={32} color="#94a3b8" />
+                  <Text style={styles.imagePlaceholderText}>Upload</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+          <View style={{width: 16}} />
+          <View style={[styles.inputGroup, { alignItems: 'center' }]}>
+            <Text style={styles.label}>After Treatment</Text>
+            <TouchableOpacity style={styles.imagePickerBtn} onPress={() => pickImage(setAfterImage)}>
+              {afterImage ? (
+                <Image source={{ uri: afterImage }} style={styles.previewImage} />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="camera" size={32} color="#94a3b8" />
+                  <Text style={styles.imagePlaceholderText}>Upload</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <TouchableOpacity 
           style={[styles.submitBtn, isSubmitting && styles.submitBtnDisabled]} 
           onPress={handleSubmit} 
@@ -135,5 +182,9 @@ const styles = StyleSheet.create({
   textArea: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, minHeight: 100, fontSize: 15, color: '#0f172a', textAlignVertical: 'top' },
   submitBtn: { backgroundColor: '#1d4ed8', height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 24, marginBottom: 40 },
   submitBtnDisabled: { backgroundColor: '#93c5fd' },
-  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' }
+  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  imagePickerBtn: { width: '100%', aspectRatio: 1, borderRadius: 16, overflow: 'hidden', backgroundColor: '#f1f5f9', borderWidth: 2, borderColor: '#e2e8f0', borderStyle: 'dashed' },
+  imagePlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  imagePlaceholderText: { color: '#94a3b8', fontSize: 13, fontWeight: '600', marginTop: 8 },
+  previewImage: { width: '100%', height: '100%', resizeMode: 'cover' }
 });

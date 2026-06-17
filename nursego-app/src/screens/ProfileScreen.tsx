@@ -228,13 +228,13 @@ export default function ProfileScreen({ navigation }: any) {
           
           <TouchableOpacity 
             style={styles.menuItem}
-            onPress={() => Linking.openURL('https://nursenow.in')}
+            onPress={() => Linking.openURL('https://nursego.in')}
           >
             <View style={styles.menuItemLeft}>
               <View style={[styles.iconBox, { backgroundColor: '#dcfce7' }]}>
                 <Ionicons name="help-buoy-outline" size={20} color="#16a34a" />
               </View>
-              <Text style={styles.menuItemText}>Help Center</Text>
+              <Text style={styles.menuItemText}>NurseGo Support</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
           </TouchableOpacity>
