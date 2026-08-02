@@ -167,7 +167,10 @@ export default function PatientDashboard({ navigation }: any) {
               placeholder="Enter patient location"
               placeholderTextColor="#94a3b8"
             />
-            <TouchableOpacity style={styles.setLocationBtn}>
+            <TouchableOpacity 
+              style={styles.setLocationBtn}
+              onPress={() => Alert.alert('Location Set', `Your location has been set to: ${locationText}`)}
+            >
               <Text style={styles.setLocationBtnText}>Set</Text>
             </TouchableOpacity>
           </View>
@@ -185,7 +188,10 @@ export default function PatientDashboard({ navigation }: any) {
               onChangeText={setSearchQuery}
             />
           </View>
-          <TouchableOpacity style={styles.filterBtn}>
+          <TouchableOpacity 
+            style={styles.filterBtn}
+            onPress={() => Alert.alert('Filters', 'Advanced filtering options will be available soon.')}
+          >
             <Ionicons name="options" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>

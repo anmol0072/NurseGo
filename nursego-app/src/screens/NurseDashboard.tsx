@@ -229,9 +229,11 @@ export default function NurseDashboard({ navigation }: any) {
             <View style={styles.jobDetails}>
               <Text style={styles.jobPatient}>Patient ID: {activeJob.patientId.substring(0, 8)}</Text>
               <Text style={styles.jobPrice}>Service: To be completed</Text>
-              <TouchableOpacity onPress={() => Linking.openURL(activeJob.prescriptionUrl)} style={{marginTop: 8}}>
-                 <Text style={{color: '#1d4ed8', fontWeight: '700'}}>📋 View Prescription Sheet</Text>
-              </TouchableOpacity>
+              {activeJob.prescriptionUrl && (
+                <TouchableOpacity onPress={() => Linking.openURL(activeJob.prescriptionUrl)} style={{marginTop: 8}}>
+                   <Text style={{color: '#1d4ed8', fontWeight: '700'}}>📋 View Prescription Sheet</Text>
+                </TouchableOpacity>
+              )}
             </View>
             <View style={styles.alertActions}>
               <TouchableOpacity style={[styles.actionBtn, styles.declineBtn]} onPress={handleCancelAssignment}>
