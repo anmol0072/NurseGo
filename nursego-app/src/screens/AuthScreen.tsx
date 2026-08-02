@@ -275,7 +275,11 @@ export default function AuthScreen({ navigation }: any) {
                       </View>
                     </View>
                     <TouchableOpacity 
-                      style={[styles.primaryButton, isLoading && styles.roleButtonActive]} 
+                      style={[
+                        styles.primaryButton, 
+                        { backgroundColor: role === 'NURSE' ? '#059669' : '#1d4ed8' },
+                        isLoading && { opacity: 0.7 }
+                      ]} 
                       onPress={handleSendOtp}
                       disabled={isLoading}
                     >
@@ -298,7 +302,11 @@ export default function AuthScreen({ navigation }: any) {
                       </View>
                     </View>
                     <TouchableOpacity 
-                      style={[styles.primaryButton, isLoading && styles.roleButtonActive]} 
+                      style={[
+                        styles.primaryButton, 
+                        { backgroundColor: role === 'NURSE' ? '#059669' : '#1d4ed8' },
+                        isLoading && { opacity: 0.7 }
+                      ]} 
                       onPress={handleVerifyOtp}
                       disabled={isLoading}
                     >
@@ -307,8 +315,11 @@ export default function AuthScreen({ navigation }: any) {
                   </>
                 )}
 
-                <TouchableOpacity style={{ marginTop: 20, alignItems: 'center' }} onPress={() => setIsOtpMode(false)}>
-                  <Text style={styles.secondaryButtonText}>Back to Email Login</Text>
+                <TouchableOpacity onPress={() => setIsOtpMode(!isOtpMode)}>
+                  <Text style={[
+                    styles.bottomLinkText,
+                    { color: role === 'NURSE' ? '#34d399' : '#60a5fa' }
+                  ]}>{isOtpMode ? 'Use Email / Password instead' : 'Continue with Phone (OTP)'}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -348,16 +359,16 @@ export default function AuthScreen({ navigation }: any) {
                   </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity activeOpacity={0.8} onPress={handleLogin} disabled={isLoading}>
-                  <LinearGradient
-                    colors={isLoading ? ['#94a3b8', '#64748b'] : ['#3b82f6', '#1d4ed8']}
-                    style={styles.primaryButton}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  >
-                    <Text style={styles.primaryButtonText}>{isLoading ? 'Signing in...' : 'Sign In'}</Text>
-                    {!isLoading && <Ionicons name="arrow-forward" size={20} color="#fff" />}
-                  </LinearGradient>
+                <TouchableOpacity 
+                  style={[
+                    styles.primaryButton, 
+                    { backgroundColor: role === 'NURSE' ? '#059669' : '#1d4ed8' },
+                    isLoading && { opacity: 0.7 }
+                  ]} 
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.primaryButtonText}>{isLoading ? 'Signing in...' : 'Sign In securely'}</Text>
                 </TouchableOpacity>
 
                 <View style={styles.dividerContainer}>
@@ -366,7 +377,10 @@ export default function AuthScreen({ navigation }: any) {
                   <View style={styles.divider} />
                 </View>
 
-                <TouchableOpacity style={styles.otpButton} onPress={() => setIsOtpMode(true)}>
+                <TouchableOpacity 
+                  style={[styles.otpButton, { backgroundColor: role === 'NURSE' ? '#059669' : '#1d4ed8' }]} 
+                  onPress={() => setIsOtpMode(true)}
+                >
                   <Ionicons name="chatbubble-ellipses-outline" size={20} color="#fff" style={{ marginRight: 10 }} />
                   <Text style={styles.googleButtonText}>Continue with Phone (OTP)</Text>
                 </TouchableOpacity>
@@ -382,11 +396,16 @@ export default function AuthScreen({ navigation }: any) {
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                  style={styles.secondaryButton} 
-                  activeOpacity={0.8} 
-                  onPress={() => navigation.navigate('Register', { role })}
+                  onPress={() => navigation.navigate('Register', { role })} 
+                  style={[
+                    styles.secondaryButton,
+                    { borderColor: role === 'NURSE' ? 'rgba(5, 150, 105, 0.5)' : 'rgba(59, 130, 246, 0.5)' }
+                  ]}
                 >
-                  <Text style={styles.secondaryButtonText}>Create a New Account</Text>
+                  <Text style={[
+                    styles.secondaryButtonText,
+                    { color: role === 'NURSE' ? '#34d399' : '#60a5fa' }
+                  ]}>Create New Account</Text>
                 </TouchableOpacity>
               </View>
             )}
