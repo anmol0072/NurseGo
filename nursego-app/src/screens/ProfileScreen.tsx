@@ -240,6 +240,18 @@ export default function ProfileScreen({ navigation }: any) {
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.menuItem}
+            onPress={() => navigation.navigate('Terms')}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: '#e0f2fe' }]}>
+                <Ionicons name="document-text-outline" size={20} color="#0284c7" />
+              </View>
+              <Text style={styles.menuItemText}>Terms & Conditions</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.menuItem}
             onPress={() => navigation.navigate('Policies')}
           >
             <View style={styles.menuItemLeft}>
