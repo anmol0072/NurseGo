@@ -212,15 +212,27 @@ export default function ProfileScreen({ navigation }: any) {
             <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Payment')}>
-            <View style={styles.menuItemLeft}>
-              <View style={[styles.iconBox, { backgroundColor: '#fef3c7' }]}>
-                <Ionicons name="wallet-outline" size={20} color="#d97706" />
+          {userRole === 'NURSE' ? (
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('NurseDocument')}>
+              <View style={styles.menuItemLeft}>
+                <View style={[styles.iconBox, { backgroundColor: '#dcfce7' }]}>
+                  <Ionicons name="shield-checkmark-outline" size={20} color="#16a34a" />
+                </View>
+                <Text style={styles.menuItemText}>Verification & Receiving</Text>
               </View>
-              <Text style={styles.menuItemText}>Payment Methods & Wallet</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
-          </TouchableOpacity>
+              <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Payment')}>
+              <View style={styles.menuItemLeft}>
+                <View style={[styles.iconBox, { backgroundColor: '#fef3c7' }]}>
+                  <Ionicons name="wallet-outline" size={20} color="#d97706" />
+                </View>
+                <Text style={styles.menuItemText}>Payment Methods & Wallet</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.section}>

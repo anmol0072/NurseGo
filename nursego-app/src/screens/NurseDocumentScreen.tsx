@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function NurseDocumentScreen({ navigation }: any) {
   const [docs, setDocs] = useState({
@@ -9,13 +10,15 @@ export default function NurseDocumentScreen({ navigation }: any) {
     degree: false,
   });
 
+  const [bankDetails, setBankDetails] = useState({
+    accountName: '',
+    accountNumber: '',
+    ifsc: ''
+  });
+
   const handleUpload = (docType: keyof typeof docs) => {
-    // Mock file upload
     Alert.alert('Upload Document', `Simulating file picker for ${docType}...`, [
-      { 
-        text: 'Select File', 
-        onPress: () => setDocs(prev => ({ ...prev, [docType]: true })) 
-      }
+      { text: 'Select File', onPress: () => setDocs(prev => ({ ...prev, [docType]: true })) }
     ]);
   };
 
@@ -24,8 +27,18 @@ export default function NurseDocumentScreen({ navigation }: any) {
       Alert.alert('Incomplete', 'Aadhar and INC Diploma are mandatory.');
       return;
     }
-    Alert.alert('Success', 'Documents submitted for verification!', [
-      { text: 'Go to Dashboard', onPress: () => navigation.replace('Nurse') }
+    if (!bankDetails.accountName || !bankDetails.accountNumber || !bankDetails.ifsc) {
+      Alert.alert('Incomplete', 'Please provide complete bank details to receive your earnings.');
+      return;
+    }
+    Alert.alert('Success', 'Verification documents and receiving details submitted!', [
+      { text: 'Done', onPress: () => {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.replace('Nurse');
+        }
+      }}
     ]);
   };
 
@@ -34,10 +47,14 @@ export default function NurseDocumentScreen({ navigation }: any) {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>KYC Verification</Text>
-          <Text style={styles.subtitle}>Upload documents to start earning.</Text>
+          <TouchableOpacity onPress={() => navigation.canGoBack() && navigation.goBack()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color="#0f172a" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Verification & Receiving</Text>
+          <Text style={styles.subtitle}>Upload your documents and add your bank details to start earning.</Text>
         </View>
 
+        <Text style={styles.sectionHeading}>KYC Documents</Text>
         <View style={styles.card}>
           
           <View style={styles.docItem}>
@@ -79,11 +96,49 @@ export default function NurseDocumentScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit}>
-            <Text style={styles.primaryButtonText}>Submit Documents</Text>
-          </TouchableOpacity>
-
         </View>
+
+        <Text style={[styles.sectionHeading, { marginTop: 24 }]}>Bank Details (Receiving)</Text>
+        <View style={styles.card}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Account Holder Name</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="As per bank records"
+              placeholderTextColor="#94a3b8"
+              value={bankDetails.accountName}
+              onChangeText={(text) => setBankDetails(prev => ({ ...prev, accountName: text }))}
+            />
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Account Number</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="e.g. 123456789012"
+              placeholderTextColor="#94a3b8"
+              keyboardType="numeric"
+              value={bankDetails.accountNumber}
+              onChangeText={(text) => setBankDetails(prev => ({ ...prev, accountNumber: text }))}
+            />
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>IFSC Code</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="e.g. HDFC0001234"
+              placeholderTextColor="#94a3b8"
+              autoCapitalize="characters"
+              value={bankDetails.ifsc}
+              onChangeText={(text) => setBankDetails(prev => ({ ...prev, ifsc: text }))}
+            />
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit}>
+          <Text style={styles.primaryButtonText}>Submit Details</Text>
+        </TouchableOpacity>
 
       </ScrollView>
     </SafeAreaView>
@@ -106,20 +161,32 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
   headerContainer: {
-    marginBottom: 32,
-    marginTop: 20,
+    marginBottom: 24,
+    marginTop: 10,
+  },
+  backBtn: {
+    paddingVertical: 8,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '900',
     color: '#1e293b',
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#64748b',
     marginTop: 8,
     fontWeight: '500',
+    lineHeight: 22,
+  },
+  sectionHeading: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 12,
+    marginLeft: 4,
   },
   card: {
     backgroundColor: '#ffffff',
@@ -188,5 +255,24 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#0f172a',
   },
 });
