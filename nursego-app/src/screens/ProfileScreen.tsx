@@ -202,7 +202,10 @@ export default function ProfileScreen({ navigation }: any) {
             <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => Alert.alert('Saved Addresses', 'You have no saved addresses yet. You can add one during your next booking.')}
+          >
             <View style={styles.menuItemLeft}>
               <View style={[styles.iconBox, { backgroundColor: '#fce7f3' }]}>
                 <Ionicons name="location-outline" size={20} color="#db2777" />
