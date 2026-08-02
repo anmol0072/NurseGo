@@ -74,8 +74,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const isEmail = identifier.includes('@');
     const normalizedId = isEmail ? identifier.toLowerCase().trim() : identifier.trim();
 
+    let whereClause = {};
+    if (isEmail) {
+      whereClause = { email: normalizedId };
+    } else {
+      whereClause = {
+        OR: [
+          { phone: normalizedId },
+          { phone: normalizedId.startsWith('+') ? normalizedId : `+91${normalizedId}` },
+          { phone: normalizedId.replace(/^\+91/, '') }
+        ]
+      };
+    }
+
     const user = await prisma.user.findFirst({
-      where: isEmail ? { email: normalizedId } : { phone: normalizedId }
+      where: whereClause
     });
 
     if (!user || !user.password) {
@@ -207,7 +220,15 @@ export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    let user = await prisma.user.findFirst({ where: { phone: formattedPhone } });
+    let user = await prisma.user.findFirst({ 
+      where: { 
+        OR: [
+          { phone: formattedPhone },
+          { phone: phone },
+          { phone: phone.replace(/^\+91/, '') }
+        ]
+      } 
+    });
     
     if (!user) {
       user = await prisma.user.create({
