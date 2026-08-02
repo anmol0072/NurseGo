@@ -37,15 +37,23 @@ export default function PatientDashboard({ navigation }: any) {
       if (data.success && data.data.length > 0) {
         // Map database services to UI format, matching against DEFAULT_SERVICES for rich UI
         const dynamicServices = data.data.map((s: any, idx: number) => {
-          const ds = DEFAULT_SERVICES.find(d => d.name === s.name);
+          // Flexible name matching to handle spelling differences (e.g. Catheterization vs Catheterisation)
+          const ds = DEFAULT_SERVICES.find(d => d.name.toLowerCase().replace(/z/g, 's') === s.name.toLowerCase().replace(/z/g, 's'));
+          
+          let cat = 'Care';
+          const lowerName = s.name.toLowerCase();
+          if (lowerName.includes('injection')) cat = 'Injection';
+          else if (lowerName.includes('catheter') || lowerName.includes('dressing') || lowerName.includes('removal') || lowerName.includes('tube')) cat = 'Procedure';
+          else if (lowerName.includes('test') || lowerName.includes('sample') || lowerName.includes('diagnostic')) cat = 'Diagnostic';
+
           return {
             id: s.id,
             name: s.name,
             desc: ds ? ds.desc : 'Professional service by certified nurse',
-            category: ds ? ds.category : (s.name.toLowerCase().includes('injection') ? 'Injection' : 'Care'),
+            category: ds ? ds.category : cat,
             time: ds ? ds.time : '45 min',
             price: s.basePrice || s.price || 400,
-            icon: ds ? ds.icon : (idx % 2 === 0 ? 'medkit-outline' : 'pulse-outline'),
+            icon: ds ? ds.icon : (cat === 'Injection' ? 'pulse-outline' : (cat === 'Procedure' ? 'bandage-outline' : 'medkit-outline')),
             color: ds ? ds.color : (idx % 2 === 0 ? '#ea580c' : '#3b82f6'),
             bg: ds ? ds.bg : (idx % 2 === 0 ? '#fff7ed' : '#eff6ff'),
             rx: ds ? ds.rx : false
