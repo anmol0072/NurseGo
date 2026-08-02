@@ -24,6 +24,7 @@ export default function SideMenu({ visible, onClose, navigation }: SideMenuProps
     { id: 'refer', title: 'Refer a Friend', icon: 'gift-outline' },
     { id: 'emergency', title: 'Emergency Contacts', icon: 'warning-outline' },
     { id: 'terms', title: 'Terms & Conditions', icon: 'document-text-outline' },
+    { id: 'policies', title: 'Legal & Policies', icon: 'shield-checkmark-outline' },
   ];
 
   const handlePress = async (id: string) => {
@@ -46,6 +47,9 @@ export default function SideMenu({ visible, onClose, navigation }: SideMenuProps
     } else if (id === 'terms') {
       onClose();
       navigation.navigate('Terms');
+    } else if (id === 'policies') {
+      onClose();
+      navigation.navigate('Policies');
     } else {
       onClose();
       setModalVisible(true);

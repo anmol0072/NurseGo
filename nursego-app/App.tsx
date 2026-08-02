@@ -33,6 +33,7 @@ import DeviceSyncScreen from './src/screens/DeviceSyncScreen';
 import VideoConsultScreen from './src/screens/VideoConsultScreen';
 import ChronicDiseaseScreen from './src/screens/ChronicDiseaseScreen';
 import TermsScreen from './src/screens/TermsScreen';
+import PoliciesScreen from './src/screens/PoliciesScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
@@ -109,6 +110,7 @@ export default function App() {
         <Stack.Screen name="VideoConsult" component={VideoConsultScreen} />
         <Stack.Screen name="ChronicDisease" component={ChronicDiseaseScreen} />
         <Stack.Screen name="Terms" component={TermsScreen} />
+        <Stack.Screen name="Policies" component={PoliciesScreen} />
       </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
