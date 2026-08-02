@@ -4,6 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TermsModal from '../components/TermsModal';
+import SideMenu from '../components/SideMenu';
 
 const CATEGORIES = ['All', 'Injection', 'Procedure', 'Diagnostic', 'Care'];
 
@@ -24,6 +25,7 @@ export default function PatientDashboard({ navigation }: any) {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationText, setLocationText] = useState('Fetching location...');
   const [isMapFullScreen, setIsMapFullScreen] = useState(false);
+  const [isSideMenuVisible, setSideMenuVisible] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [services, setServices] = useState<any[]>(DEFAULT_SERVICES);
 
@@ -90,7 +92,10 @@ export default function PatientDashboard({ navigation }: any) {
       {/* Dynamic Header */}
       <View style={[styles.headerBackground, { paddingTop: Math.max(insets.top, 20) }]}>
         <View style={styles.headerTop}>
-          <View>
+          <TouchableOpacity onPress={() => setSideMenuVisible(true)} style={{ marginRight: 16 }}>
+            <Ionicons name="menu" size={28} color="#f8fafc" />
+          </TouchableOpacity>
+          <View style={{ flex: 1 }}>
             <Text style={styles.greetingText}>Good Morning,</Text>
             <Text style={styles.nameText}>{user?.name ? user.name.split(' ')[0] : 'Guest'}</Text>
           </View>
@@ -334,6 +339,12 @@ export default function PatientDashboard({ navigation }: any) {
           </TouchableOpacity>
         </View>
       )}
+
+      <SideMenu 
+        visible={isSideMenuVisible} 
+        onClose={() => setSideMenuVisible(false)} 
+        navigation={navigation} 
+      />
 
     </SafeAreaView>
   );
