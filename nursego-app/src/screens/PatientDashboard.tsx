@@ -3,19 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert,
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import TermsModal from '../components/TermsModal';
 
 const CATEGORIES = ['All', 'Injection', 'Procedure', 'Diagnostic', 'Care'];
 
-const SERVICES = [
+const DEFAULT_SERVICES = [
   { id: 1, name: 'IM Injection', desc: 'Intramuscular injection by certified nurse', category: 'Injection', time: '30 min', price: 400, icon: 'pulse-outline', color: '#3b82f6', bg: '#eff6ff', rx: false },
   { id: 2, name: 'IV Injection', desc: 'Intravenous injection and fluid setup', category: 'Injection', time: '45 min', price: 699, icon: 'water-outline', color: '#2563eb', bg: '#eff6ff', rx: true },
   { id: 3, name: 'Catheterisation', desc: 'Urinary catheter insertion by specialist', category: 'Procedure', time: '60 min', price: 1000, icon: 'thermometer-outline', color: '#9333ea', bg: '#faf5ff', rx: true },
-  { id: 4, name: 'Blood Test', desc: 'Sample collection and lab dispatch', category: 'Diagnostic', time: '20 min', price: 299, icon: 'clipboard-outline', color: '#059669', bg: '#ecfdf5', rx: false },
-  { id: 5, name: 'Wound Dressing', desc: 'Professional wound cleaning and dressing', category: 'Care', time: '40 min', price: 450, icon: 'medkit-outline', color: '#ea580c', bg: '#fff7ed', rx: false },
-  { id: 6, name: 'Physiotherapy', desc: 'Post-op or general mobility sessions', category: 'Care', time: '60 min', price: 1200, icon: 'body-outline', color: '#4f46e5', bg: '#eef2ff', rx: false },
-  { id: 7, name: 'ECG at Home', desc: '12-lead ECG with cardiologist review', category: 'Diagnostic', time: '30 min', price: 800, icon: 'heart-outline', color: '#e11d48', bg: '#fff1f2', rx: true },
-  { id: 8, name: 'Nebulization', desc: 'Respiratory therapy for asthma/COPD', category: 'Procedure', time: '20 min', price: 350, icon: 'cloud-outline', color: '#0891b2', bg: '#ecfeff', rx: true },
-  { id: 9, name: 'Vital Signs Check', desc: 'Temperature, BP, Pulse, Respiration', category: 'Diagnostic', time: '15 min', price: 199, icon: 'heart-half-outline', color: '#db2777', bg: '#fdf2f8', rx: false },
 ];
 
 const PACKAGES = [
@@ -30,8 +25,36 @@ export default function PatientDashboard({ navigation }: any) {
   const [locationText, setLocationText] = useState('Fetching location...');
   const [isMapFullScreen, setIsMapFullScreen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [services, setServices] = useState<any[]>(DEFAULT_SERVICES);
+
+  const fetchServices = async () => {
+    try {
+      const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+      const res = await fetch(`${BASE_URL}/api/services`);
+      const data = await res.json();
+      if (data.success && data.data.length > 0) {
+        // Map database services to UI format
+        const dynamicServices = data.data.map((s: any, idx: number) => ({
+          id: s.id,
+          name: s.name,
+          desc: 'Professional service by certified nurse',
+          category: 'Care', // Default category
+          time: '45 min',
+          price: s.basePrice,
+          icon: idx % 2 === 0 ? 'medkit-outline' : 'pulse-outline',
+          color: idx % 2 === 0 ? '#ea580c' : '#3b82f6',
+          bg: idx % 2 === 0 ? '#fff7ed' : '#eff6ff',
+          rx: false
+        }));
+        setServices(dynamicServices);
+      }
+    } catch (err) {
+      console.log('Failed to fetch services, using defaults');
+    }
+  };
 
   useEffect(() => {
+    fetchServices();
     const loadUser = async () => {
       const u = await AsyncStorage.getItem('user');
       if (u) setUser(JSON.parse(u));
@@ -42,7 +65,7 @@ export default function PatientDashboard({ navigation }: any) {
     }, 1500);
   }, []);
 
-  const filteredServices = SERVICES.filter(s => {
+  const filteredServices = services.filter(s => {
     const matchesCategory = activeCategory === 'All' || s.category === activeCategory;
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -63,6 +86,7 @@ export default function PatientDashboard({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.container} edges={['right', 'left']}>
+      <TermsModal />
       {/* Dynamic Header */}
       <View style={[styles.headerBackground, { paddingTop: Math.max(insets.top, 20) }]}>
         <View style={styles.headerTop}>

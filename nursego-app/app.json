@@ -21,13 +21,35 @@
         "foregroundImage": "./assets/logo.jpeg"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.nursenow.app"
+      "package": "com.nursenow.app",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow NurseGo to access your camera for consultations."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow NurseGo to access your photos for wound images."
+        }
+      ],
+      [
+        "expo-document-picker",
+        {}
+      ]
     ],
     "extra": {
       "eas": {

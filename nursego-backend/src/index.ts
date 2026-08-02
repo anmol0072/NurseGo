@@ -1,6 +1,8 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+dotenv.config();
+
 import path from 'path';
 
 // Trigger Render Deployment 2
@@ -9,8 +11,8 @@ import paymentsRoutes from './routes/payments.routes';
 import bookingsRoutes from './routes/bookings.routes';
 import uploadRoutes from './routes/upload.routes';
 import settingsRoutes from './routes/settings.routes';
-
-dotenv.config();
+import servicesRoutes from './routes/services.routes';
+import documentsRoutes from './routes/documents.routes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +27,8 @@ app.use('/api/payments', paymentsRoutes);
 app.use('/api/bookings', bookingsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/services', servicesRoutes);
+app.use('/api/documents', documentsRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'NurseGo API is running smoothly' });

@@ -23,6 +23,7 @@ export default function SideMenu({ visible, onClose, navigation }: SideMenuProps
     { id: 'support', title: 'Help & Support', icon: 'help-circle-outline' },
     { id: 'refer', title: 'Refer a Friend', icon: 'gift-outline' },
     { id: 'emergency', title: 'Emergency Contacts', icon: 'warning-outline' },
+    { id: 'terms', title: 'Terms & Conditions', icon: 'document-text-outline' },
   ];
 
   const handlePress = async (id: string) => {
@@ -42,6 +43,9 @@ export default function SideMenu({ visible, onClose, navigation }: SideMenuProps
     } else if (id === 'support') {
       onClose();
       Linking.openURL('https://nursego.in');
+    } else if (id === 'terms') {
+      onClose();
+      navigation.navigate('Terms');
     } else {
       onClose();
       setModalVisible(true);

@@ -122,10 +122,10 @@ export default function RegistrationScreen({ route, navigation }: any) {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Email Address {isEmail ? '*' : '(Optional)'}</Text>
               <TextInput
-                style={[styles.input, isEmail && styles.disabledInput]}
+                style={[styles.input]}
                 placeholder="Email Address"
                 value={formData.email}
-                editable={!isEmail}
+                editable={true}
                 onChangeText={(text) => setFormData({...formData, email: text})}
                 autoCapitalize="none"
               />
@@ -192,13 +192,13 @@ export default function RegistrationScreen({ route, navigation }: any) {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Mobile Number {!isEmail ? '*' : '(Optional)'}</Text>
               <TextInput
-                style={[styles.input, !isEmail && styles.disabledInput]}
+                style={[styles.input]}
                 placeholder="10-digit mobile number"
                 placeholderTextColor="#94a3b8"
                 keyboardType="numeric"
                 maxLength={10}
                 value={formData.phone}
-                editable={isEmail}
+                editable={true}
                 onChangeText={(text) => setFormData({...formData, phone: text})}
               />
             </View>

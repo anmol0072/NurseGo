@@ -88,7 +88,7 @@ export const getAvailableBookings = async (req: Request, res: Response): Promise
 
 export const acceptBooking = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     // @ts-ignore
     const nurseId = req.user?.userId;
 
@@ -114,7 +114,7 @@ export const acceptBooking = async (req: Request, res: Response): Promise<void> 
 
 export const completeBooking = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     
     const booking = await prisma.booking.update({
       where: { id },
@@ -132,7 +132,7 @@ export const completeBooking = async (req: Request, res: Response): Promise<void
 
 export const getBooking = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: {
@@ -157,7 +157,7 @@ export const getBooking = async (req: Request, res: Response): Promise<void> => 
 
 export const cancelAssignment = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     
     // Reset the booking to PENDING and remove the nurse
     const booking = await prisma.booking.update({
@@ -200,7 +200,7 @@ export const updateNurseLocation = async (req: Request, res: Response): Promise<
 
 export const createTreatmentReport = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params; // booking id
+    const id = req.params.id as string; // booking id
     const { bp, pulse, temperature, procedureDone, medicinesGiven, woundImageUrls, notes, patientSignatureUrl } = req.body;
 
     const report = await prisma.treatmentReport.create({

@@ -1,11 +1,19 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import twilio from 'twilio';
 
+const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'nursenow_super_secret_key_2026';
+
+let twilioClient: any = null;
+const getTwilioClient = () => {
+  if (!twilioClient) {
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  }
+  return twilioClient;
+};
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -45,7 +53,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       }
     });
 
-    const token = jwt.sign({ userId: newUser.id, role: newUser.role }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: newUser.id, role: newUser.role }, JWT_SECRET, { expiresIn: '365d' });
 
     res.json({ success: true, message: 'Registration successful', token, user: newUser });
   } catch (error) {
@@ -127,7 +135,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
       });
     }
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '365d' });
 
     res.json({ success: true, message: 'Google login successful', token, user });
   } catch (error) {
@@ -154,5 +162,67 @@ export const me = async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     console.error('Fetch me error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const sendOtp = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { phone } = req.body;
+    if (!phone) {
+      res.status(400).json({ success: false, message: 'Phone number is required' });
+      return;
+    }
+    
+    const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+    const twilioClient = getTwilioClient();
+
+    await twilioClient.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID!)
+      .verifications
+      .create({ to: formattedPhone, channel: 'sms' });
+
+    res.json({ success: true, message: 'OTP sent successfully' });
+  } catch (error: any) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ success: false, message: error.message || 'Failed to send OTP' });
+  }
+};
+
+export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { phone, code, role } = req.body;
+    if (!phone || !code) {
+      res.status(400).json({ success: false, message: 'Phone and code are required' });
+      return;
+    }
+
+    const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+    const twilioClient = getTwilioClient();
+
+    const verificationCheck = await twilioClient.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID!)
+      .verificationChecks
+      .create({ to: formattedPhone, code });
+
+    if (verificationCheck.status !== 'approved') {
+      res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+      return;
+    }
+
+    let user = await prisma.user.findFirst({ where: { phone: formattedPhone } });
+    
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          phone: formattedPhone,
+          role: role || 'PATIENT',
+          name: 'New User'
+        }
+      });
+    }
+
+    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET || 'nursenow_super_secret_key_2026', { expiresIn: '365d' });
+    res.json({ success: true, message: 'OTP verified successfully', token, user });
+  } catch (error: any) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ success: false, message: error.message || 'Failed to verify OTP' });
   }
 };

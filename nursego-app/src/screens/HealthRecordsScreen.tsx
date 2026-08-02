@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Platform, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 
 export default function HealthRecordsScreen({ navigation }: any) {
   const [records, setRecords] = useState<any[]>([]);
@@ -26,15 +27,85 @@ export default function HealthRecordsScreen({ navigation }: any) {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
+
+      let combinedRecords: any[] = [];
       
       if (data.success) {
         // Filter bookings that have a treatment report or prescription
         const withRecords = data.bookings.filter((b: any) => b.treatmentReport || b.prescriptionUrl);
-        setRecords(withRecords);
+        combinedRecords = [...withRecords];
       }
+
+      // Fetch manually uploaded documents
+      const docsRes = await fetch(`${BASE_URL}/api/documents/${user.id}`);
+      const docsData = await docsRes.json();
+      if (docsData.success) {
+        const manualDocs = docsData.data.map((d: any) => ({
+          ...d,
+          isManualDoc: true,
+          createdAt: d.createdAt || new Date().toISOString()
+        }));
+        combinedRecords = [...combinedRecords, ...manualDocs];
+      }
+
+      // Sort by date descending
+      combinedRecords.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setRecords(combinedRecords);
     } catch (err) {
       console.error(err);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUploadDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'image/*'],
+        copyToCacheDirectory: true
+      });
+
+      if (result.canceled || !result.assets[0]) return;
+
+      setLoading(true);
+      const userStr = await AsyncStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+
+      const formData = new FormData();
+      formData.append('prescription', {
+        uri: result.assets[0].uri,
+        name: result.assets[0].name,
+        type: result.assets[0].mimeType || 'application/pdf'
+      } as any);
+
+      const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' } // Fetch automatically sets multipart boundaries
+      });
+      const uploadData = await uploadRes.json();
+
+      if (uploadData.success) {
+        // Save to DB
+        await fetch(`${BASE_URL}/api/documents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            type: 'Lab Report',
+            url: uploadData.url
+          })
+        });
+        Alert.alert('Success', 'Lab Report uploaded successfully');
+        fetchRecords();
+      } else {
+        Alert.alert('Error', 'Failed to upload document');
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Upload Error:', err);
+      Alert.alert('Error', 'An error occurred during upload');
       setLoading(false);
     }
   };
@@ -107,6 +178,29 @@ export default function HealthRecordsScreen({ navigation }: any) {
   };
 
   const renderItem = ({ item }: { item: any }) => {
+    if (item.isManualDoc) {
+      return (
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+            <View style={[styles.badge, { backgroundColor: '#ecfdf5' }]}>
+              <Text style={[styles.badgeText, { color: '#059669' }]}>{item.type}</Text>
+            </View>
+          </View>
+          <View style={styles.reportSection}>
+            <Text style={styles.reportTitle}>Manually Uploaded Record</Text>
+            <TouchableOpacity style={styles.outlineBtn} onPress={() => {
+              if (Platform.OS === 'web') window.open(item.url);
+              else Linking.openURL(item.url);
+            }}>
+              <Ionicons name="eye" size={18} color="#1d4ed8" />
+              <Text style={styles.outlineBtnText}>View Document</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -165,6 +259,16 @@ export default function HealthRecordsScreen({ navigation }: any) {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.uploadBanner}>
+            <Ionicons name="cloud-upload-outline" size={32} color="#1d4ed8" style={{ marginBottom: 12 }} />
+            <Text style={styles.uploadTitle}>Not linked with ABHA?</Text>
+            <Text style={styles.uploadSub}>You can manually upload your lab reports and prescriptions here.</Text>
+            <TouchableOpacity style={styles.uploadBtn} onPress={handleUploadDocument}>
+              <Text style={styles.uploadBtnText}>Upload Lab Report</Text>
+            </TouchableOpacity>
+          </View>
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="folder-open-outline" size={64} color="#cbd5e1" />
@@ -196,7 +300,12 @@ const styles = StyleSheet.create({
   pdfBtnText: { color: '#fff', fontWeight: '700', fontSize: 14, marginLeft: 8 },
   outlineBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: '#1d4ed8', height: 44, borderRadius: 12 },
   outlineBtnText: { color: '#1d4ed8', fontWeight: '700', fontSize: 14, marginLeft: 8 },
-  emptyContainer: { alignItems: 'center', marginTop: 80, paddingHorizontal: 40 },
+  emptyContainer: { alignItems: 'center', marginTop: 40, paddingHorizontal: 40 },
   emptyText: { fontSize: 18, fontWeight: '800', color: '#475569', marginTop: 16, marginBottom: 8 },
-  emptySub: { fontSize: 14, color: '#94a3b8', textAlign: 'center', lineHeight: 20 }
+  emptySub: { fontSize: 14, color: '#94a3b8', textAlign: 'center', lineHeight: 22 },
+  uploadBanner: { backgroundColor: '#e0e7ff', padding: 20, borderRadius: 16, alignItems: 'center', marginBottom: 20 },
+  uploadTitle: { fontSize: 16, fontWeight: '800', color: '#1e3a8a', marginBottom: 4 },
+  uploadSub: { fontSize: 13, color: '#3b82f6', textAlign: 'center', marginBottom: 16 },
+  uploadBtn: { backgroundColor: '#1d4ed8', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
+  uploadBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 }
 });

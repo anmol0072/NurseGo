@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SideMenu from '../components/SideMenu';
 import ProfileMenu from '../components/ProfileMenu';
+import TermsModal from '../components/TermsModal';
 
 export default function NurseDashboard({ navigation }: any) {
   const [isOnline, setIsOnline] = useState(false);
@@ -124,7 +125,7 @@ export default function NurseDashboard({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      
+      <TermsModal />
       {/* Floating Header similar to Patient Dashboard */}
       <View style={[styles.floatingHeader, { top: Math.max(insets.top, 20) }]}>
         <TouchableOpacity style={styles.menuButton} onPress={() => setSideMenuVisible(true)}>

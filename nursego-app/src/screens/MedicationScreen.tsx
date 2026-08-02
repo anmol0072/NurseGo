@@ -11,6 +11,9 @@ export default function MedicationScreen({ navigation }: any) {
     { id: 3, name: 'Atorvastatin 20mg', time: '09:00 PM', type: 'After Dinner', taken: false, color: '#8b5cf6' }
   ]);
 
+  const [selectedMember, setSelectedMember] = useState('Me');
+  const familyMembers = ['Me', 'Mother', 'Father'];
+
   const togglePill = (id: number) => {
     setPills(pills.map(p => p.id === id ? { ...p, taken: !p.taken } : p));
   };
@@ -36,6 +39,22 @@ export default function MedicationScreen({ navigation }: any) {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Smart Pill Reminder</Text>
         <View style={{ width: 40 }} />
+      </View>
+
+      <View style={styles.membersContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.membersScroll}>
+          {familyMembers.map(member => (
+            <TouchableOpacity 
+              key={member}
+              style={[styles.memberBadge, selectedMember === member && styles.memberBadgeActive]}
+              onPress={() => setSelectedMember(member)}
+            >
+              <Text style={[styles.memberText, selectedMember === member && styles.memberTextActive]}>
+                {member}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -87,6 +106,12 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#f1f5f9', alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
+  membersContainer: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f1f5f9', paddingVertical: 12 },
+  membersScroll: { paddingHorizontal: 20, gap: 12 },
+  memberBadge: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#e2e8f0' },
+  memberBadgeActive: { backgroundColor: '#eff6ff', borderColor: '#3b82f6' },
+  memberText: { fontSize: 14, fontWeight: '600', color: '#64748b' },
+  memberTextActive: { color: '#1d4ed8' },
   content: { padding: 20 },
   banner: { backgroundColor: '#1d4ed8', borderRadius: 16, padding: 20, flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   bannerIcon: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },

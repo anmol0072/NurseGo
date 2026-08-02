@@ -100,8 +100,8 @@ export default function ChronicDiseaseScreen({ navigation }: any) {
              <Ionicons name="document-text" size={24} color="#8b5cf6" />
            </View>
            <View style={styles.planInfo}>
-              <Text style={styles.planTitle}>Monthly Report PDF</Text>
-              <Text style={styles.planDesc}>Share this 30-day trend report with your primary doctor.</Text>
+              <Text style={styles.planTitle}>Weekly Report PDF</Text>
+              <Text style={styles.planDesc}>Share this 7-day trend report with your primary doctor.</Text>
            </View>
            <TouchableOpacity 
              style={styles.actionBtn}

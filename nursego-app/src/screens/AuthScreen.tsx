@@ -19,6 +19,11 @@ export default function AuthScreen({ navigation }: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  
+  const [isOtpMode, setIsOtpMode] = useState(false);
+  const [phone, setPhone] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com',
@@ -122,8 +127,61 @@ export default function AuthScreen({ navigation }: any) {
     }
   };
 
+  const handleSendOtp = async () => {
+    if (!phone) {
+      showToast('Please enter your phone number');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpSent(true);
+        showToast('OTP sent securely via SMS');
+      } else {
+        showAlert('Error', data.message || 'Failed to send OTP');
+      }
+    } catch (e: any) {
+      showAlert('Network Error', e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode) {
+      showToast('Please enter the OTP');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code: otpCode, role })
+      });
+      const data = await res.json();
+      if (data.success) {
+        await AsyncStorage.setItem('user', JSON.stringify({ ...data.user, token: data.token }));
+        showToast('Login Successful!');
+        navigation.replace(data.user.role === 'PATIENT' ? 'Patient' : 'Nurse');
+      } else {
+        showAlert('Error', data.message || 'Invalid OTP');
+      }
+    } catch (e: any) {
+      showAlert('Network Error', e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
       {toastMessage && (
@@ -197,83 +255,148 @@ export default function AuthScreen({ navigation }: any) {
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.cardTitle}>Welcome Back</Text>
-              <Text style={styles.cardSubtitle}>
-                Sign in to your {role === 'PATIENT' ? 'Patient' : 'Nurse'} account
-              </Text>
+            {isOtpMode ? (
+              <View style={styles.formContainer}>
+                <Text style={styles.cardTitle}>Phone Login</Text>
+                
+                {!otpSent ? (
+                  <>
+                    <View style={styles.inputGroup}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="call-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
+                        <TextInput 
+                          style={styles.input} 
+                          placeholder="9999999999" 
+                          keyboardType="phone-pad"
+                          value={phone} 
+                          onChangeText={setPhone} 
+                          editable={!isLoading}
+                        />
+                      </View>
+                    </View>
+                    <TouchableOpacity 
+                      style={[styles.primaryButton, isLoading && styles.roleButtonActive]} 
+                      onPress={handleSendOtp}
+                      disabled={isLoading}
+                    >
+                      <Text style={styles.primaryButtonText}>{isLoading ? 'Sending...' : 'Send Secure OTP'}</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <View style={styles.inputGroup}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="lock-closed-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
+                        <TextInput 
+                          style={styles.input} 
+                          placeholder="1234" 
+                          keyboardType="number-pad"
+                          value={otpCode} 
+                          onChangeText={setOtpCode} 
+                          editable={!isLoading}
+                        />
+                      </View>
+                    </View>
+                    <TouchableOpacity 
+                      style={[styles.primaryButton, isLoading && styles.roleButtonActive]} 
+                      onPress={handleVerifyOtp}
+                      disabled={isLoading}
+                    >
+                      <Text style={styles.primaryButtonText}>{isLoading ? 'Verifying...' : 'Verify & Login'}</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
 
-              <View style={styles.inputWrapper}>
-                <Ionicons name="person-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email or Mobile Number"
-                  placeholderTextColor="#94a3b8"
-                  autoCapitalize="none"
-                  value={identifier}
-                  onChangeText={setIdentifier}
-                  returnKeyType="next"
-                />
-              </View>
-
-              <View style={styles.inputWrapper}>
-                <Ionicons name="lock-closed-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor="#94a3b8"
-                  secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={setPassword}
-                  onSubmitEditing={handleLogin}
-                  returnKeyType="send"
-                />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 10 }}>
-                  <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#94a3b8" />
+                <TouchableOpacity style={{ marginTop: 20, alignItems: 'center' }} onPress={() => setIsOtpMode(false)}>
+                  <Text style={styles.secondaryButtonText}>Back to Email Login</Text>
                 </TouchableOpacity>
               </View>
+            ) : (
+              <View style={styles.formContainer}>
+                <Text style={styles.cardTitle}>Welcome Back</Text>
+                <Text style={styles.cardSubtitle}>
+                  Sign in to your {role === 'PATIENT' ? 'Patient' : 'Nurse'} account
+                </Text>
 
-              <TouchableOpacity activeOpacity={0.8} onPress={handleLogin} disabled={isLoading}>
-                <LinearGradient
-                  colors={isLoading ? ['#94a3b8', '#64748b'] : ['#3b82f6', '#1d4ed8']}
-                  style={styles.primaryButton}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
+                <View style={styles.inputWrapper}>
+                  <Ionicons name="person-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email or Mobile Number"
+                    placeholderTextColor="#94a3b8"
+                    autoCapitalize="none"
+                    value={identifier}
+                    onChangeText={setIdentifier}
+                    returnKeyType="next"
+                  />
+                </View>
+
+                <View style={styles.inputWrapper}>
+                  <Ionicons name="lock-closed-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    placeholderTextColor="#94a3b8"
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                    onSubmitEditing={handleLogin}
+                    returnKeyType="send"
+                  />
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 10 }}>
+                    <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#94a3b8" />
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity activeOpacity={0.8} onPress={handleLogin} disabled={isLoading}>
+                  <LinearGradient
+                    colors={isLoading ? ['#94a3b8', '#64748b'] : ['#3b82f6', '#1d4ed8']}
+                    style={styles.primaryButton}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    <Text style={styles.primaryButtonText}>{isLoading ? 'Signing in...' : 'Sign In'}</Text>
+                    {!isLoading && <Ionicons name="arrow-forward" size={20} color="#fff" />}
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <View style={styles.dividerContainer}>
+                  <View style={styles.divider} />
+                  <Text style={styles.dividerText}>OR</Text>
+                  <View style={styles.divider} />
+                </View>
+
+                <TouchableOpacity style={styles.otpButton} onPress={() => setIsOtpMode(true)}>
+                  <Ionicons name="chatbubble-ellipses-outline" size={20} color="#fff" style={{ marginRight: 10 }} />
+                  <Text style={styles.googleButtonText}>Continue with Phone (OTP)</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.googleButton} 
+                  activeOpacity={0.8} 
+                  onPress={() => promptAsync()} 
+                  disabled={!request || isLoading}
                 >
-                  <Text style={styles.primaryButtonText}>{isLoading ? 'Signing in...' : 'Sign In'}</Text>
-                  {!isLoading && <Ionicons name="arrow-forward" size={20} color="#fff" />}
-                </LinearGradient>
-              </TouchableOpacity>
+                  <Ionicons name="logo-google" size={20} color="#fff" style={{ marginRight: 10 }} />
+                  <Text style={styles.googleButtonText}>Continue with Google</Text>
+                </TouchableOpacity>
 
-              <View style={styles.dividerContainer}>
-                <View style={styles.divider} />
-                <Text style={styles.dividerText}>OR</Text>
-                <View style={styles.divider} />
+                <TouchableOpacity 
+                  style={styles.secondaryButton} 
+                  activeOpacity={0.8} 
+                  onPress={() => navigation.navigate('Register', { role })}
+                >
+                  <Text style={styles.secondaryButtonText}>Create a New Account</Text>
+                </TouchableOpacity>
               </View>
-
-              <TouchableOpacity 
-                style={styles.googleButton} 
-                activeOpacity={0.8} 
-                onPress={() => promptAsync()} 
-                disabled={!request || isLoading}
-              >
-                <Ionicons name="logo-google" size={20} color="#fff" style={{ marginRight: 10 }} />
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.secondaryButton} 
-                activeOpacity={0.8} 
-                onPress={() => navigation.navigate('Register', { role })}
-              >
-                <Text style={styles.secondaryButtonText}>Create a New Account</Text>
-              </TouchableOpacity>
+            )}
 
             </View>
 
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -338,6 +461,12 @@ const styles = StyleSheet.create({
     alignSelf: Platform.OS === 'web' ? 'center' : 'stretch',
     width: Platform.OS === 'web' ? 400 : '100%',
     maxWidth: '100%',
+  },
+  formContainer: {
+    width: '100%',
+  },
+  inputGroup: {
+    marginBottom: 8,
   },
   roleToggleContainer: {
     flexDirection: 'row',
@@ -434,6 +563,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#334155',
+    paddingVertical: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 16,
+  },
+  otpButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1d4ed8',
     paddingVertical: 16,
     borderRadius: 16,
     borderWidth: 1,
