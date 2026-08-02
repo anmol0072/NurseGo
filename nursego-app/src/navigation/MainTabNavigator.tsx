@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import PatientDashboard from '../screens/PatientDashboard';
 import BookingHistoryScreen from '../screens/BookingHistoryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import { View, Text, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, TouchableOpacity, Platform } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 
@@ -38,9 +38,9 @@ export default function MainTabNavigator() {
         tabBarActiveTintColor: '#1d4ed8',
         tabBarInactiveTintColor: '#94a3b8',
         tabBarStyle: {
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 10,
+          paddingTop: 8,
+          height: Platform.OS === 'ios' ? 85 : 65,
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#f1f5f9',
