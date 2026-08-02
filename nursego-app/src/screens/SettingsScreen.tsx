@@ -159,9 +159,14 @@ export default function SettingsScreen({ navigation }: any) {
         </Section>
 
         <Section title="ABOUT">
-          <LinkRow icon="document-text-outline" label="Terms of Service" onPress={() => Linking.openURL('https://nursego.in/terms')} />
-          <LinkRow icon="shield-half-outline" label="Privacy Policy" onPress={() => Linking.openURL('https://nursego.in/privacy')} />
-          <LinkRow icon="information-circle-outline" label="About NurseGo" onPress={() => Linking.openURL('https://nursego.in')} isLast />
+          <LinkRow icon="document-text-outline" label="Terms of Service" onPress={() => navigation.navigate('Terms')} />
+          <LinkRow icon="shield-half-outline" label="Privacy Policy" onPress={() => navigation.navigate('Policies')} />
+          <LinkRow 
+            icon="information-circle-outline" 
+            label="About NurseGo" 
+            onPress={() => Alert.alert('About NurseGo', 'NurseGo Healthcare v1.0.0\n\nElevating healthcare standards with premium on-demand nursing services, diagnostics, and patient care.\n\nContact: nursegohealthcarecompany@gmail.com\nPhone: +91 78140 12460')} 
+            isLast 
+          />
         </Section>
 
         <View style={styles.deleteSection}>
