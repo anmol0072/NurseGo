@@ -290,43 +290,51 @@ export default function PatientDashboard({ navigation }: any) {
 
         {/* Services List */}
         <View style={styles.servicesGrid}>
-          {filteredServices.map(service => (
-            <TouchableOpacity 
-              key={service.id} 
-              style={styles.serviceCard}
-              onPress={() => handleBookService(service)}
-            >
-              <View style={[styles.serviceIconContainer, { backgroundColor: service.bg }]}>
-                <Ionicons name={service.icon as any} size={28} color={service.color} />
-              </View>
-              <View style={styles.serviceInfo}>
-                <Text style={styles.serviceName}>{service.name}</Text>
-                <Text style={styles.serviceDesc} numberOfLines={1}>{service.desc}</Text>
-                <View style={styles.serviceMeta}>
-                  <View style={styles.metaBadge}>
-                    <Ionicons name="time-outline" size={12} color="#64748b" />
-                    <Text style={styles.metaText}>{service.time}</Text>
+          {filteredServices.length === 0 ? (
+            <View style={styles.emptyStateContainer}>
+              <Ionicons name="search-outline" size={48} color="#cbd5e1" />
+              <Text style={styles.emptyStateTitle}>No Services Found</Text>
+              <Text style={styles.emptyStateSub}>There are currently no services available in the "{activeCategory}" category.</Text>
+            </View>
+          ) : (
+            filteredServices.map(service => (
+              <TouchableOpacity 
+                key={service.id} 
+                style={styles.serviceCard}
+                onPress={() => handleBookService(service)}
+              >
+                <View style={[styles.serviceIconContainer, { backgroundColor: service.bg }]}>
+                  <Ionicons name={service.icon as any} size={28} color={service.color} />
+                </View>
+                <View style={styles.serviceInfo}>
+                  <Text style={styles.serviceName}>{service.name}</Text>
+                  <Text style={styles.serviceDesc} numberOfLines={1}>{service.desc}</Text>
+                  <View style={styles.serviceMeta}>
+                    <View style={styles.metaBadge}>
+                      <Ionicons name="time-outline" size={12} color="#64748b" />
+                      <Text style={styles.metaText}>{service.time}</Text>
+                    </View>
+                    {service.rx && (
+                       <View style={[styles.metaBadge, { backgroundColor: '#fef2f2', marginLeft: 6 }]}>
+                         <Text style={[styles.metaText, { color: '#ef4444' }]}>Rx Required</Text>
+                       </View>
+                    )}
                   </View>
-                  {service.rx && (
-                     <View style={[styles.metaBadge, { backgroundColor: '#fef2f2', marginLeft: 6 }]}>
-                       <Text style={[styles.metaText, { color: '#ef4444' }]}>Rx Required</Text>
-                     </View>
+                </View>
+                <View style={styles.priceContainer}>
+                  <Text style={styles.priceText}>
+                    ₹{(service.price * (user?.isSubscribed ? 0.9 : 1)).toFixed(0)}
+                  </Text>
+                  {user?.isSubscribed && (
+                    <Text style={{fontSize: 10, color: '#16a34a', fontWeight: '800', marginBottom: 4}}>10% OFF</Text>
                   )}
+                  <View style={styles.bookBtn}>
+                    <Text style={styles.bookBtnText}>Book</Text>
+                  </View>
                 </View>
-              </View>
-              <View style={styles.priceContainer}>
-                <Text style={styles.priceText}>
-                  ₹{(service.price * (user?.isSubscribed ? 0.9 : 1)).toFixed(0)}
-                </Text>
-                {user?.isSubscribed && (
-                  <Text style={{fontSize: 10, color: '#16a34a', fontWeight: '800'}}>10% OFF</Text>
-                )}
-                <View style={styles.bookBtn}>
-                  <Text style={styles.bookBtnText}>Book</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))
+          )}
         </View>
       </ScrollView>
 
@@ -427,5 +435,8 @@ const styles = StyleSheet.create({
   priceContainer: { alignItems: 'flex-end', justifyContent: 'space-between' },
   priceText: { fontSize: 18, fontWeight: '900', color: '#1d4ed8' },
   bookBtn: { backgroundColor: '#0f172a', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
-  bookBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' }
+  bookBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  emptyStateContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40, paddingHorizontal: 20 },
+  emptyStateTitle: { fontSize: 18, fontWeight: '700', color: '#334155', marginTop: 16, marginBottom: 8 },
+  emptyStateSub: { fontSize: 14, color: '#64748b', textAlign: 'center', lineHeight: 20 }
 });
