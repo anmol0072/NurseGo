@@ -247,7 +247,7 @@ export default function AuthScreen({ navigation }: any) {
                 </TouchableOpacity>
                 <TouchableOpacity 
                   activeOpacity={0.8}
-                  style={[styles.roleButton, role === 'NURSE' && styles.roleButtonActive]}
+                  style={[styles.roleButton, role === 'NURSE' && { backgroundColor: '#059669' }]}
                   onPress={() => { setRole('NURSE'); setIdentifier(''); setPassword(''); }}
                 >
                   <Ionicons name="medkit" size={18} color={role === 'NURSE' ? '#fff' : '#94a3b8'} style={{ marginRight: 6 }} />

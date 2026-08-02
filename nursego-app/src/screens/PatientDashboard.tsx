@@ -35,19 +35,22 @@ export default function PatientDashboard({ navigation }: any) {
       const res = await fetch(`${BASE_URL}/api/services`);
       const data = await res.json();
       if (data.success && data.data.length > 0) {
-        // Map database services to UI format
-        const dynamicServices = data.data.map((s: any, idx: number) => ({
-          id: s.id,
-          name: s.name,
-          desc: 'Professional service by certified nurse',
-          category: 'Care', // Default category
-          time: '45 min',
-          price: s.basePrice,
-          icon: idx % 2 === 0 ? 'medkit-outline' : 'pulse-outline',
-          color: idx % 2 === 0 ? '#ea580c' : '#3b82f6',
-          bg: idx % 2 === 0 ? '#fff7ed' : '#eff6ff',
-          rx: false
-        }));
+        // Map database services to UI format, matching against DEFAULT_SERVICES for rich UI
+        const dynamicServices = data.data.map((s: any, idx: number) => {
+          const ds = DEFAULT_SERVICES.find(d => d.name === s.name);
+          return {
+            id: s.id,
+            name: s.name,
+            desc: ds ? ds.desc : 'Professional service by certified nurse',
+            category: ds ? ds.category : (s.name.toLowerCase().includes('injection') ? 'Injection' : 'Care'),
+            time: ds ? ds.time : '45 min',
+            price: s.basePrice || s.price || 400,
+            icon: ds ? ds.icon : (idx % 2 === 0 ? 'medkit-outline' : 'pulse-outline'),
+            color: ds ? ds.color : (idx % 2 === 0 ? '#ea580c' : '#3b82f6'),
+            bg: ds ? ds.bg : (idx % 2 === 0 ? '#fff7ed' : '#eff6ff'),
+            rx: ds ? ds.rx : false
+          };
+        });
         setServices(dynamicServices);
       }
     } catch (err) {
