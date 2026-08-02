@@ -238,6 +238,18 @@ export default function ProfileScreen({ navigation }: any) {
             </View>
             <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
           </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('Policies')}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: '#f3e8ff' }]}>
+                <Ionicons name="shield-checkmark-outline" size={20} color="#9333ea" />
+              </View>
+              <Text style={styles.menuItemText}>Legal & Policies</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
