@@ -38,9 +38,9 @@ export default function MainTabNavigator() {
         tabBarActiveTintColor: '#1d4ed8',
         tabBarInactiveTintColor: '#94a3b8',
         tabBarStyle: {
-          paddingBottom: Platform.OS === 'ios' ? 20 : 10,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
           paddingTop: 8,
-          height: Platform.OS === 'ios' ? 85 : 65,
+          height: Platform.OS === 'ios' ? 88 : 70,
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#f1f5f9',
