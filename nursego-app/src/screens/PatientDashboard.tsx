@@ -196,97 +196,102 @@ export default function PatientDashboard({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        {/* Categories */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesContainer}>
-          {CATEGORIES.map((cat, index) => (
-            <TouchableOpacity 
-              key={index}
-              style={[styles.categoryBadge, activeCategory === cat && styles.categoryBadgeActive]}
-              onPress={() => setActiveCategory(cat)}
-            >
-              <Text style={[styles.categoryText, activeCategory === cat && styles.categoryTextActive]}>{cat}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        {/* Conditional Layout: Hide banners when searching to bring results immediately below search bar */}
+        {!searchQuery && (
+          <>
+            {/* Categories */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesContainer}>
+              {CATEGORIES.map((cat, index) => (
+                <TouchableOpacity 
+                  key={index}
+                  style={[styles.categoryBadge, activeCategory === cat && styles.categoryBadgeActive]}
+                  onPress={() => setActiveCategory(cat)}
+                >
+                  <Text style={[styles.categoryText, activeCategory === cat && styles.categoryTextActive]}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
 
-        {/* Care+ Subscription Banner */}
-        {!user?.isSubscribed && (
-          <TouchableOpacity 
-            style={styles.carePlusBanner}
-            onPress={() => navigation.navigate('Subscription')}
-            activeOpacity={0.9}
-          >
-            <View style={styles.carePlusContent}>
-              <View style={styles.carePlusBadge}><Text style={styles.carePlusBadgeText}>NEW</Text></View>
-              <Text style={styles.carePlusTitle}>NurseGo <Text style={{color: '#fff'}}>Care+</Text></Text>
-              <Text style={styles.carePlusSub}>Get priority booking & 10% off every service.</Text>
+            {/* Care+ Subscription Banner */}
+            {!user?.isSubscribed && (
+              <TouchableOpacity 
+                style={styles.carePlusBanner}
+                onPress={() => navigation.navigate('Subscription')}
+                activeOpacity={0.9}
+              >
+                <View style={styles.carePlusContent}>
+                  <View style={styles.carePlusBadge}><Text style={styles.carePlusBadgeText}>NEW</Text></View>
+                  <Text style={styles.carePlusTitle}>NurseGo <Text style={{color: '#fff'}}>Care+</Text></Text>
+                  <Text style={styles.carePlusSub}>Get priority booking & 10% off every service.</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={24} color="#fff" />
+              </TouchableOpacity>
+            )}
+
+            {/* Feature Icons Grid (Phase 2 Additions) */}
+            <View style={styles.featuresGrid}>
+              <TouchableOpacity style={styles.featureItem} onPress={() => navigation.navigate('AIChat')}>
+                 <View style={[styles.featureIconBox, { backgroundColor: '#f0fdf4' }]}>
+                   <Ionicons name="chatbubbles-outline" size={24} color="#16a34a" />
+                 </View>
+                 <Text style={styles.featureItemText}>AI Nurse</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.featureItem} onPress={() => navigation.navigate('DeviceSync')}>
+                 <View style={[styles.featureIconBox, { backgroundColor: '#fef2f2' }]}>
+                   <Ionicons name="pulse-outline" size={24} color="#ef4444" />
+                 </View>
+                 <Text style={styles.featureItemText}>Vitals Sync</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.featureItem} onPress={() => navigation.navigate('Medication')}>
+                 <View style={[styles.featureIconBox, { backgroundColor: '#eff6ff' }]}>
+                   <Ionicons name="medical-outline" size={24} color="#3b82f6" />
+                 </View>
+                 <Text style={styles.featureItemText}>Pill Reminder</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.featureItem} onPress={() => navigation.navigate('VideoConsult')}>
+                 <View style={[styles.featureIconBox, { backgroundColor: '#faf5ff' }]}>
+                   <Ionicons name="videocam-outline" size={24} color="#9333ea" />
+                 </View>
+                 <Text style={styles.featureItemText}>Telehealth</Text>
+              </TouchableOpacity>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#fff" />
-          </TouchableOpacity>
-        )}
 
-        {/* Feature Icons Grid (Phase 2 Additions) */}
-        <View style={styles.featuresGrid}>
-          <TouchableOpacity style={styles.featureItem} onPress={() => navigation.navigate('AIChat')}>
-             <View style={[styles.featureIconBox, { backgroundColor: '#f0fdf4' }]}>
-               <Ionicons name="chatbubbles-outline" size={24} color="#16a34a" />
-             </View>
-             <Text style={styles.featureItemText}>AI Nurse</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.featureItem} onPress={() => navigation.navigate('DeviceSync')}>
-             <View style={[styles.featureIconBox, { backgroundColor: '#fef2f2' }]}>
-               <Ionicons name="pulse-outline" size={24} color="#ef4444" />
-             </View>
-             <Text style={styles.featureItemText}>Vitals Sync</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.featureItem} onPress={() => navigation.navigate('Medication')}>
-             <View style={[styles.featureIconBox, { backgroundColor: '#eff6ff' }]}>
-               <Ionicons name="medical-outline" size={24} color="#3b82f6" />
-             </View>
-             <Text style={styles.featureItemText}>Pill Reminder</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.featureItem} onPress={() => navigation.navigate('VideoConsult')}>
-             <View style={[styles.featureIconBox, { backgroundColor: '#faf5ff' }]}>
-               <Ionicons name="videocam-outline" size={24} color="#9333ea" />
-             </View>
-             <Text style={styles.featureItemText}>Telehealth</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Chronic Care Banner (Phase 2 Additions) */}
-        <TouchableOpacity 
-          style={styles.chronicBanner}
-          onPress={() => navigation.navigate('ChronicDisease')}
-          activeOpacity={0.9}
-        >
-          <View style={styles.chronicIconBox}>
-             <Ionicons name="medical" size={28} color="#0f766e" />
-          </View>
-          <View style={{ flex: 1, marginLeft: 16 }}>
-             <Text style={styles.chronicTitle}>Chronic Care Hub</Text>
-             <Text style={styles.chronicSub}>Manage Diabetes, Hypertension & Asthma.</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#0f766e" />
-        </TouchableOpacity>
-
-        {/* Recovery Packages */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recovery Packages</Text>
-        </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}>
-          {PACKAGES.map(pkg => (
+            {/* Chronic Care Banner (Phase 2 Additions) */}
             <TouchableOpacity 
-              key={pkg.id} 
-              style={[styles.packageCard, { backgroundColor: pkg.bg, borderColor: pkg.color }]}
-              onPress={() => handleBookService({ name: pkg.name, price: pkg.price })}
+              style={styles.chronicBanner}
+              onPress={() => navigation.navigate('ChronicDisease')}
+              activeOpacity={0.9}
             >
-              <Text style={[styles.pkgDuration, { color: pkg.color }]}>{pkg.duration}</Text>
-              <Text style={styles.pkgTitle}>{pkg.name}</Text>
-              <Text style={styles.pkgDesc}>{pkg.desc}</Text>
-              <Text style={[styles.pkgPrice, { color: pkg.color }]}>₹{pkg.price.toLocaleString()}</Text>
+              <View style={styles.chronicIconBox}>
+                 <Ionicons name="medical" size={28} color="#0f766e" />
+              </View>
+              <View style={{ flex: 1, marginLeft: 16 }}>
+                 <Text style={styles.chronicTitle}>Chronic Care Hub</Text>
+                 <Text style={styles.chronicSub}>Manage Diabetes, Hypertension & Asthma.</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#0f766e" />
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+
+            {/* Recovery Packages */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Recovery Packages</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}>
+              {PACKAGES.map(pkg => (
+                <TouchableOpacity 
+                  key={pkg.id} 
+                  style={[styles.packageCard, { backgroundColor: pkg.bg, borderColor: pkg.color }]}
+                  onPress={() => handleBookService({ name: pkg.name, price: pkg.price })}
+                >
+                  <Text style={[styles.pkgDuration, { color: pkg.color }]}>{pkg.duration}</Text>
+                  <Text style={styles.pkgTitle}>{pkg.name}</Text>
+                  <Text style={styles.pkgDesc}>{pkg.desc}</Text>
+                  <Text style={[styles.pkgPrice, { color: pkg.color }]}>₹{pkg.price.toLocaleString()}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </>
+        )}
 
         {/* Section Title */}
         <View style={styles.sectionHeader}>
