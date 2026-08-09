@@ -4,10 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
-WebBrowser.maybeCompleteAuthSession();
+GoogleSignin.configure({
+  webClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com',
+  iosClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com',
+});
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 const API_URL = `${BASE_URL}/api/auth`;
@@ -25,18 +27,6 @@ export default function AuthScreen({ navigation }: any) {
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com',
-    iosClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com', // Replace when you build for iOS
-    androidClientId: '216302655182-0etcdlt448is8vv7idp70npm4vr1umap.apps.googleusercontent.com', // Proper Android Key
-  });
-
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { authentication } = response;
-      handleGoogleLogin(authentication?.accessToken);
-    }
-  }, [response]);
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -51,24 +41,27 @@ export default function AuthScreen({ navigation }: any) {
     }
   };
 
-  const handleGoogleLogin = async (accessToken: string | undefined) => {
-    if (!accessToken) return;
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      // Fetch user profile from Google
-      const userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const userInfo = await userInfoResponse.json();
+      await GoogleSignin.hasPlayServices();
+      const result: any = await GoogleSignin.signIn();
+      const userInfo = result.data || result;
+      const user = userInfo?.user;
+      
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
 
       // Send to backend
       const res = await fetch(`${API_URL}/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          googleId: userInfo.id,
-          email: userInfo.email,
-          name: userInfo.name,
+          googleId: user.id,
+          email: user.email,
+          name: user.name,
           role: role
         })
       });
@@ -86,8 +79,10 @@ export default function AuthScreen({ navigation }: any) {
       } else {
         showAlert('Error', data.message || 'Google Login Failed');
       }
-    } catch (e) {
-      showAlert('Network Error', 'Cannot connect to server');
+    } catch (e: any) {
+      if (e.code !== 'IN_PROGRESS' && e.code !== 'SIGN_IN_CANCELLED') {
+        showAlert('Error', e.message || 'Cannot connect to server');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -386,10 +381,9 @@ export default function AuthScreen({ navigation }: any) {
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                  style={styles.googleButton} 
-                  activeOpacity={0.8} 
-                  onPress={() => promptAsync()} 
-                  disabled={!request || isLoading}
+                  style={styles.socialButton} 
+                  onPress={handleGoogleLogin}
+                  disabled={isLoading}
                 >
                   <Ionicons name="logo-google" size={20} color="#fff" style={{ marginRight: 10 }} />
                   <Text style={styles.googleButtonText}>Continue with Google</Text>
