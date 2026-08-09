@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "NurseGo",
-    "slug": "nursego-app",
+    "slug": "nursenow-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.jpeg",
