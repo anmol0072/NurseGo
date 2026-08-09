@@ -45,6 +45,13 @@ export default function AuthScreen({ navigation }: any) {
     setIsLoading(true);
     try {
       await GoogleSignin.hasPlayServices();
+      
+      try {
+        await GoogleSignin.signOut();
+      } catch (e) {
+        // Ignore error if not signed in
+      }
+
       const result: any = await GoogleSignin.signIn();
       const userInfo = result.data || result;
       const user = userInfo?.user;
@@ -381,7 +388,7 @@ export default function AuthScreen({ navigation }: any) {
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                  style={styles.socialButton} 
+                  style={styles.googleButton} 
                   onPress={handleGoogleLogin}
                   disabled={isLoading}
                 >
