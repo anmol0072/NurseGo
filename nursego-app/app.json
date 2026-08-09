@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "NurseNow",
-    "slug": "nursenow-app",
+    "name": "NurseGo",
+    "slug": "nursego-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.jpeg",
@@ -13,7 +13,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nursenow.app"
+      "bundleIdentifier": "com.nursego.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
         "foregroundImage": "./assets/logo.jpeg"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.nursenow.app",
+      "package": "com.nursego.app",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
