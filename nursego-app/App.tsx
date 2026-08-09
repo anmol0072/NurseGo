@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -68,10 +68,38 @@ export default function App() {
     }
   }, []);
 
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (initialRoute === null) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [initialRoute, pulseAnim]);
+
   if (initialRoute === null) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#020617' }}>
-        <ActivityIndicator size="large" color="#14b8a6" />
+        <Animated.Image 
+          source={require('./assets/logo_padded.png')} 
+          style={{ width: 120, height: 120, borderRadius: 60, transform: [{ scale: pulseAnim }] }} 
+          resizeMode="cover" 
+        />
+        <Animated.Text style={{ color: '#14b8a6', fontSize: 24, fontWeight: 'bold', marginTop: 30, opacity: pulseAnim }}>
+          NurseGo
+        </Animated.Text>
       </View>
     );
   }
