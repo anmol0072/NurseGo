@@ -28,7 +28,7 @@ export default function AuthScreen({ navigation }: any) {
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com',
     iosClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com', // Replace when you build for iOS
-    androidClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com', // Replace when you build for Android
+    androidClientId: '216302655182-0etcdlt448is8vv7idp70npm4vr1umap.apps.googleusercontent.com', // Proper Android Key
   });
 
   useEffect(() => {
