@@ -43,7 +43,7 @@ export default function SideMenu({ visible, onClose, navigation }: SideMenuProps
       navigation.navigate('EmergencyContacts');
     } else if (id === 'support') {
       onClose();
-      Linking.openURL('https://nursego.in');
+      navigation.navigate('AIAssistant');
     } else if (id === 'terms') {
       onClose();
       navigation.navigate('Terms');

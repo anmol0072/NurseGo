@@ -59,9 +59,7 @@ export default function MainTabNavigator() {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            import('react-native').then(({ Linking }) => {
-              Linking.openURL('https://nursego.in');
-            });
+            navigation.navigate('AIAssistant');
           },
         })}
       />
