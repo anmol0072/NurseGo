@@ -57,13 +57,16 @@ export default function SideMenu({ visible, onClose, navigation }: SideMenuProps
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <TouchableWithoutFeedback onPress={onClose}>
-          <View style={styles.backdrop} />
-        </TouchableWithoutFeedback>
-        
-        <View style={[styles.menuContainer, { paddingTop: insets.top }]}>
+    <>
+      <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+        <View style={styles.overlay}>
+          <TouchableOpacity 
+            style={styles.backdrop} 
+            activeOpacity={1} 
+            onPress={onClose} 
+          />
+          
+          <View style={[styles.menuContainer, { paddingTop: insets.top }]}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>NurseGo</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -86,13 +89,14 @@ export default function SideMenu({ visible, onClose, navigation }: SideMenuProps
           </View>
         </View>
       </View>
+    </Modal>
       <FeatureUnavailableModal 
         visible={modalVisible} 
         onClose={() => setModalVisible(false)} 
         title="Coming Soon"
         message="This feature will be available shortly."
       />
-    </Modal>
+    </>
   );
 }
 
