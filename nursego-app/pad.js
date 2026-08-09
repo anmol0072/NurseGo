@@ -2,11 +2,10 @@ const sharp = require('sharp');
 
 async function processImage() {
   try {
-    const inputPath = 'assets/logo.jpeg';
+    const inputPath = 'assets/nursego_logo.png'; // Using the proper high-res logo!
     const outputPath = 'assets/logo_padded.png';
     
-    // We create a 1080x1080 canvas for the adaptive icon.
-    // We resize the original logo to fit within a safe zone (e.g., 600x600).
+    // Resize the high-res logo to fit safely inside the Android icon circle
     const resizedLogo = await sharp(inputPath)
       .resize({ width: 600, height: 600, fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
       .toBuffer();
@@ -25,7 +24,7 @@ async function processImage() {
     .png()
     .toFile(outputPath);
 
-    console.log('Successfully created a padded adaptive icon!');
+    console.log('Successfully created a proper padded adaptive icon from the high-res logo!');
   } catch (err) {
     console.error('Error processing image:', err);
   }
