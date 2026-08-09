@@ -187,9 +187,17 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
     }
     
     const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+    
+    // Bypass Twilio if credentials are not set (for testing)
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_VERIFY_SERVICE_SID) {
+      console.log(`[TEST MODE] OTP requested for ${formattedPhone}. Use 123456 to verify.`);
+      res.json({ success: true, message: 'OTP sent successfully (Test Mode)' });
+      return;
+    }
+
     const twilioClient = getTwilioClient();
 
-    await twilioClient.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID!)
+    await twilioClient.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID)
       .verifications
       .create({ to: formattedPhone, channel: 'sms' });
 
@@ -209,15 +217,23 @@ export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
     }
 
     const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
-    const twilioClient = getTwilioClient();
+    
+    // Bypass Twilio if credentials are not set (for testing)
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_VERIFY_SERVICE_SID) {
+      if (code !== '123456') {
+        res.status(400).json({ success: false, message: 'Invalid OTP (Test Mode expects 123456)' });
+        return;
+      }
+    } else {
+      const twilioClient = getTwilioClient();
+      const verificationCheck = await twilioClient.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID!)
+        .verificationChecks
+        .create({ to: formattedPhone, code });
 
-    const verificationCheck = await twilioClient.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID!)
-      .verificationChecks
-      .create({ to: formattedPhone, code });
-
-    if (verificationCheck.status !== 'approved') {
-      res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
-      return;
+      if (verificationCheck.status !== 'approved') {
+        res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+        return;
+      }
     }
 
     let user = await prisma.user.findFirst({ 
