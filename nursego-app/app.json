@@ -23,7 +23,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.nursego.official",
-      "versionCode": 1,
+      "versionCode": 3,
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
