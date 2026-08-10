@@ -94,6 +94,51 @@ app.post('/delete-account', (req, res) => {
   `);
 });
 
+// Privacy Policy
+app.get('/privacy-policy', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>NurseGo - Privacy Policy</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f9fafb; color: #1f2937; line-height: 1.6; padding: 2rem; max-width: 800px; margin: 0 auto; }
+        h1 { color: #1d4ed8; font-size: 2rem; margin-bottom: 0.5rem; }
+        h2 { color: #111827; margin-top: 2rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; }
+        p, ul { margin-bottom: 1rem; }
+      </style>
+    </head>
+    <body>
+      <h1>NurseGo Privacy Policy</h1>
+      <p><strong>Last Updated: August 2026</strong></p>
+      
+      <p>Welcome to NurseGo. We respect your privacy and are committed to protecting your personal and medical data. This Privacy Policy explains how we collect, use, and safeguard your information.</p>
+
+      <h2>1. Information We Collect</h2>
+      <ul>
+        <li><strong>Personal Information:</strong> Name, phone number, email address, and precise/approximate location (for home service delivery).</li>
+        <li><strong>Health & Medical Information:</strong> Medical records, prescriptions, vitals, and appointment history uploaded to our platform to facilitate your care.</li>
+        <li><strong>Device Information:</strong> Crash logs and diagnostic data to improve app stability.</li>
+      </ul>
+
+      <h2>2. How We Use Your Information</h2>
+      <p>We use your data strictly for app functionality, including connecting you with certified nurses, processing bookings, maintaining your family dashboard, and managing your account. We do not sell your personal or medical data to third parties.</p>
+
+      <h2>3. Data Security</h2>
+      <p>All personal and medical data is encrypted in transit and securely stored. We utilize industry-standard security measures to prevent unauthorized access.</p>
+
+      <h2>4. Data Deletion</h2>
+      <p>You have the right to request the complete deletion of your account and data at any time. To submit a deletion request, please visit our <a href="/delete-account">Account Deletion Page</a>.</p>
+
+      <h2>5. Contact Us</h2>
+      <p>If you have questions about this Privacy Policy, please contact our support team through the AI Assistant within the NurseGo app.</p>
+    </body>
+    </html>
+  `);
+});
+
 import https from 'https';
 
 app.listen(PORT, () => {
