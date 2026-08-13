@@ -23,7 +23,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.nursego.official",
-      "versionCode": 3,
+      "versionCode": 4,
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
@@ -40,13 +40,13 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow NurseGo to access your camera for consultations."
+          "cameraPermission": "Allow NurseGo to access your camera to take profile photos."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow NurseGo to access your photos for wound images."
+          "photosPermission": "Allow NurseGo to access your photos to upload documents."
         }
       ],
       [
