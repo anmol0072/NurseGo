@@ -34,6 +34,14 @@ export const addService = async (req: Request, res: Response): Promise<void> => 
 export const deleteService = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id as string;
+    
+    // Check if the service is linked to any bookings
+    const bookingsCount = await prisma.booking.count({ where: { serviceId: id } });
+    if (bookingsCount > 0) {
+      res.status(400).json({ success: false, message: 'Cannot delete service because it is linked to existing bookings. Please hide it instead.' });
+      return;
+    }
+
     await prisma.service.delete({ where: { id } });
     res.json({ success: true, message: 'Service deleted successfully' });
   } catch (error) {

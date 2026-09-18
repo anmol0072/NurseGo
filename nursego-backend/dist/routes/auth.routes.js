@@ -8,5 +8,7 @@ router.post('/register', auth_controller_1.register);
 router.post('/login', auth_controller_1.login);
 router.post('/google', auth_controller_1.googleLogin);
 router.get('/me', auth_middleware_1.authMiddleware, auth_controller_1.me);
+router.post('/send-otp', auth_controller_1.sendOtp);
+router.post('/verify-otp', auth_controller_1.verifyOtp);
 exports.default = router;
 //# sourceMappingURL=auth.routes.js.map

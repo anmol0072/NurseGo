@@ -24,17 +24,21 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Convert empty strings to null to prevent unique constraint errors
+    const normalizedEmail = email?.trim() === '' ? null : email?.trim();
+    const normalizedPhone = phone?.trim() === '' ? null : phone?.trim();
+
     // Check if user exists
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: email || undefined },
-          { phone: phone || undefined }
-        ]
+          { email: normalizedEmail || undefined },
+          { phone: normalizedPhone || undefined }
+        ].filter(condition => Object.values(condition)[0] !== undefined)
       }
     });
 
-    if (existingUser) {
+    if (existingUser && (normalizedEmail || normalizedPhone)) {
       res.status(400).json({ success: false, message: 'User with this email or phone already exists' });
       return;
     }
@@ -46,8 +50,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const newUser = await prisma.user.create({
       data: {
         name,
-        email,
-        phone,
+        email: normalizedEmail,
+        phone: normalizedPhone,
         role: role || 'PATIENT',
         password: hashedPassword,
       }
@@ -91,8 +95,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       where: whereClause
     });
 
-    if (!user || !user.password) {
-      res.status(401).json({ success: false, message: 'Invalid credentials or user registered via Google' });
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found. Please register first.' });
+      return;
+    }
+
+    if (!user.password) {
+      res.status(401).json({ success: false, message: 'You registered via Google. Please use Continue with Google.' });
       return;
     }
 

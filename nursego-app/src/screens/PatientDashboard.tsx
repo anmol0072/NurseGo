@@ -6,12 +6,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import TermsModal from '../components/TermsModal';
 import SideMenu from '../components/SideMenu';
 
-const CATEGORIES = ['All', 'Injection', 'Procedure', 'Diagnostic', 'Care'];
+const CATEGORIES = ['All', 'Injection', 'Radiology', 'Laboratory', 'Minor procedures', 'Pharmacy'];
 
 const DEFAULT_SERVICES = [
   { id: 1, name: 'IM Injection', desc: 'Intramuscular injection by certified nurse', category: 'Injection', time: '30 min', price: 400, icon: 'pulse-outline', color: '#3b82f6', bg: '#eff6ff', rx: false },
   { id: 2, name: 'IV Injection', desc: 'Intravenous injection and fluid setup', category: 'Injection', time: '45 min', price: 699, icon: 'water-outline', color: '#2563eb', bg: '#eff6ff', rx: true },
-  { id: 3, name: 'Catheterisation', desc: 'Urinary catheter insertion by specialist', category: 'Procedure', time: '60 min', price: 1000, icon: 'thermometer-outline', color: '#9333ea', bg: '#faf5ff', rx: true },
+  { id: 3, name: 'Catheterisation', desc: 'Urinary catheter insertion by specialist', category: 'Minor procedures', time: '60 min', price: 1000, icon: 'thermometer-outline', color: '#9333ea', bg: '#faf5ff', rx: true },
 ];
 
 const PACKAGES = [
@@ -40,11 +40,13 @@ export default function PatientDashboard({ navigation }: any) {
           // Flexible name matching to handle spelling differences (e.g. Catheterization vs Catheterisation)
           const ds = DEFAULT_SERVICES.find(d => d.name.toLowerCase().replace(/z/g, 's') === s.name.toLowerCase().replace(/z/g, 's'));
           
-          let cat = 'Care';
+          let cat = 'Minor procedures';
           const lowerName = s.name.toLowerCase();
           if (lowerName.includes('injection')) cat = 'Injection';
-          else if (lowerName.includes('catheter') || lowerName.includes('dressing') || lowerName.includes('removal') || lowerName.includes('tube')) cat = 'Procedure';
-          else if (lowerName.includes('test') || lowerName.includes('sample') || lowerName.includes('diagnostic')) cat = 'Diagnostic';
+          else if (lowerName.includes('catheter') || lowerName.includes('dressing') || lowerName.includes('removal') || lowerName.includes('tube')) cat = 'Minor procedures';
+          else if (lowerName.includes('test') || lowerName.includes('sample') || lowerName.includes('diagnostic')) cat = 'Laboratory';
+          else if (lowerName.includes('x-ray') || lowerName.includes('scan') || lowerName.includes('radiology')) cat = 'Radiology';
+          else if (lowerName.includes('medicine') || lowerName.includes('pharmacy')) cat = 'Pharmacy';
 
           return {
             id: s.id,
@@ -53,7 +55,7 @@ export default function PatientDashboard({ navigation }: any) {
             category: ds ? ds.category : cat,
             time: ds ? ds.time : '45 min',
             price: s.basePrice || s.price || 400,
-            icon: ds ? ds.icon : (cat === 'Injection' ? 'pulse-outline' : (cat === 'Procedure' ? 'bandage-outline' : 'medkit-outline')),
+            icon: ds ? ds.icon : (cat === 'Injection' ? 'pulse-outline' : (cat === 'Minor procedures' ? 'bandage-outline' : 'medkit-outline')),
             color: ds ? ds.color : (idx % 2 === 0 ? '#ea580c' : '#3b82f6'),
             bg: ds ? ds.bg : (idx % 2 === 0 ? '#fff7ed' : '#eff6ff'),
             rx: ds ? ds.rx : false

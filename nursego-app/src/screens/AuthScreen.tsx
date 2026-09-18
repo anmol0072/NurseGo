@@ -7,8 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 GoogleSignin.configure({
-  webClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com',
-  iosClientId: '216302655182-ivbhglknpjah09vbk2sg09aginpj4p34.apps.googleusercontent.com',
+  webClientId: '216302655182-e1emdqp0h7e01sj7ac41lfacg4f2aqob.apps.googleusercontent.com',
+  iosClientId: '216302655182-e1emdqp0h7e01sj7ac41lfacg4f2aqob.apps.googleusercontent.com',
 });
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
@@ -639,5 +639,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  bottomLinkText: {
+    color: '#1d4ed8',
+    fontWeight: '600',
+    fontSize: 14,
   }
 });

@@ -3,22 +3,35 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Platform, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import io from 'socket.io-client';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 const { width, height } = Dimensions.get('window');
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const socket = io(BASE_URL);
 
 export default function TrackingScreen({ route, navigation }: any) {
   const { bookingId } = route.params || {};
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [nurseLocation, setNurseLocation] = useState<{latitude: number, longitude: number} | null>(null);
 
   useEffect(() => {
     if (!bookingId) return;
     
-    const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-    
     const fetchBooking = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/bookings/${bookingId}`);
+        const userStr = await AsyncStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        if (user) {
+          socket.emit('join_patient_room', user.id);
+          socket.emit('join_booking_room', bookingId);
+        }
+
+        const res = await fetch(`${BASE_URL}/api/bookings/${bookingId}`, {
+          headers: { 'Authorization': `Bearer ${user?.token}` }
+        });
         const data = await res.json();
         if (data.success) {
           setBooking(data.booking);
@@ -39,9 +52,25 @@ export default function TrackingScreen({ route, navigation }: any) {
     };
 
     fetchBooking();
-    // Poll every 5 seconds for live tracking and status updates
+    
+    // Socket.io real-time listener for this booking
+    socket.on('booking_accepted', (updatedBooking: any) => {
+      if (updatedBooking.id === bookingId) {
+        setBooking(updatedBooking);
+      }
+    });
+
+    socket.on('nurse_location', (loc: {latitude: number, longitude: number}) => {
+      setNurseLocation(loc);
+    });
+
+    // Poll every 5 seconds for live tracking fallback
     const interval = setInterval(fetchBooking, 5000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      socket.off('booking_accepted');
+      socket.off('nurse_location');
+    };
   }, [bookingId]);
 
   const handleShare = async () => {
@@ -77,11 +106,24 @@ export default function TrackingScreen({ route, navigation }: any) {
           style={{ position: 'absolute', width: '100%', height: '100%', border: 'none' }}
         />
       ) : (
-        <Image 
-          source={{ uri: 'https://cdn.pixabay.com/photo/2019/09/22/16/20/location-4496459_1280.png' }} 
-          style={StyleSheet.absoluteFill} 
-          resizeMode="cover"
-        />
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          style={StyleSheet.absoluteFill}
+          region={{
+            latitude: nurseLocation ? nurseLocation.latitude : 28.6139,
+            longitude: nurseLocation ? nurseLocation.longitude : 77.2090,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          }}
+        >
+          {nurseLocation && (
+            <Marker 
+              coordinate={nurseLocation} 
+              title="Nurse Location"
+              description="Your nurse is on the way"
+            />
+          )}
+        </MapView>
       )}
 
       {/* Back Button Overlay */}

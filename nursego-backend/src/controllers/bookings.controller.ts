@@ -35,6 +35,14 @@ export const createBooking = async (req: Request, res: Response): Promise<void> 
       }
     });
 
+    // Notify all nurses in the "nurses" room about the new booking
+    try {
+      const io = require('../socket').getIO();
+      io.to('nurses').emit('new_booking', newBooking);
+    } catch (socketError) {
+      console.error('Socket error on create booking:', socketError);
+    }
+
     res.json({ success: true, booking: newBooking });
   } catch (error) {
     console.error('Create Booking Error:', error);
@@ -104,6 +112,16 @@ export const acceptBooking = async (req: Request, res: Response): Promise<void> 
         status: 'ACCEPTED'
       }
     });
+
+    try {
+      const io = require('../socket').getIO();
+      // Notify the specific patient
+      io.to(`patient_${booking.patientId}`).emit('booking_accepted', booking);
+      // Also broadcast to other nurses to remove it from their available list
+      io.to('nurses').emit('booking_removed', booking.id);
+    } catch (socketError) {
+      console.error('Socket error on accept booking:', socketError);
+    }
 
     res.json({ success: true, booking });
   } catch (error) {

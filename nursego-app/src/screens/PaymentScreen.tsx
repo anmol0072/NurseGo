@@ -28,12 +28,16 @@ export default function PaymentScreen({ route, navigation }: any) {
         const userStr = await AsyncStorage.getItem('user');
         const user = userStr ? JSON.parse(userStr) : null;
         const patientId = user?.id || 'anonymous';
+        const token = user?.token;
 
         // Cash on Arrival skips gateway
         if (selectedMethod === 'cash') {
            const res = await fetch(`${BASE_URL}/api/bookings`, {
              method: 'POST',
-             headers: { 'Content-Type': 'application/json' },
+             headers: { 
+               'Content-Type': 'application/json',
+               'Authorization': `Bearer ${token}`
+             },
              body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod, prescriptionUrl, isEmergency })
            });
            const data = await res.json();
@@ -96,7 +100,10 @@ export default function PaymentScreen({ route, navigation }: any) {
                         });
                         const bookingRes = await fetch(`${BASE_URL}/api/bookings`, {
                            method: 'POST',
-                           headers: { 'Content-Type': 'application/json' },
+                           headers: { 
+                             'Content-Type': 'application/json',
+                             'Authorization': `Bearer ${token}`
+                           },
                            body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod, prescriptionUrl, isEmergency })
                         });
                         const bookingData = await bookingRes.json();
@@ -186,7 +193,10 @@ export default function PaymentScreen({ route, navigation }: any) {
              // Create Booking
              const bookingRes = await fetch(`${BASE_URL}/api/bookings`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ patientId, serviceName, totalAmount: total, distance: 4, paymentMethod: selectedMethod, prescriptionUrl, isEmergency })
              });
              const bookingData = await bookingRes.json();

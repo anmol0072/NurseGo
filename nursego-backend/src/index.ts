@@ -139,9 +139,15 @@ app.get('/privacy-policy', (req, res) => {
   `);
 });
 
+import http from 'http';
+import { initSocket } from './socket';
+
+const server = http.createServer(app);
+initSocket(server);
+
 import https from 'https';
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 
   // Keep-Alive mechanism to prevent Render from sleeping and wiping SQLite DB

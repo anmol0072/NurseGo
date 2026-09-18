@@ -23,7 +23,7 @@ NurseGo bridges the gap between patients needing immediate or scheduled in-home 
 
 ## 3. Revenue Model (Monetization Strategy)
 To ensure sustainable growth and profitability, NurseGo employs a multi-tiered revenue model:
-1. **Commission-Based Model:** NurseGo charges a flat percentage fee (e.g., 15-20%) on every booking processed through the platform.
+1. **Commission-Based Model:** For nursing services, NurseGo operates on a 70:30 cut ratio (70% goes to the nurse, 30% to the platform).
 2. **Subscription Model (NurseGo Prime):** Patients can pay a monthly or yearly subscription fee for waived booking fees, priority nurse dispatch, and discounted rates—ideal for chronic care patients.
 3. **B2B Partnerships:** Partnering with local hospitals and insurance providers to handle their post-discharge homecare logistics.
 4. **In-App Advertising:** Promoted listings for top-rated nurses or integrated local pharmacy advertisements.

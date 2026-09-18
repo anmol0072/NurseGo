@@ -97,7 +97,14 @@ export default function FamilyDashboardScreen({ navigation }: any) {
 
         <TouchableOpacity 
           style={styles.inviteCard}
-          onPress={() => Alert.alert('Invite Link Generated', 'Share this secure tracking link with your family member via WhatsApp.')}
+          onPress={() => {
+            import('react-native').then(({ Share, Alert }) => {
+              const url = `nursego://family/invite/${Math.random().toString(36).substring(7)}`;
+              Share.share({
+                message: `Join my NurseGo Family Dashboard to securely manage our healthcare. Tap the link to join: ${url}`,
+              }).catch(err => Alert.alert('Error', err.message));
+            });
+          }}
         >
           <View style={styles.inviteIcon}>
             <Ionicons name="link" size={24} color="#0f766e" />

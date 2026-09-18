@@ -2,10 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, Switch, Platform, Image, Linking } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 import SideMenu from '../components/SideMenu';
 import ProfileMenu from '../components/ProfileMenu';
 import TermsModal from '../components/TermsModal';
+import io from 'socket.io-client';
+
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const socket = io(BASE_URL);
 
 export default function NurseDashboard({ navigation }: any) {
   const [isOnline, setIsOnline] = useState(false);
@@ -30,14 +36,72 @@ export default function NurseDashboard({ navigation }: any) {
       if (u) setUser(JSON.parse(u));
     };
     loadUser();
+
+    // Socket.io listeners
+    socket.emit('join_nurse_room');
+
+    socket.on('new_booking', (booking: any) => {
+      setAvailableJobs((prev: any) => [booking, ...prev]);
+    });
+
+    socket.on('booking_removed', (bookingId: string) => {
+      setAvailableJobs((prev: any) => prev.filter((job: any) => job.id !== bookingId));
+    });
+
+    return () => {
+      socket.off('new_booking');
+      socket.off('booking_removed');
+    };
   }, []);
 
-  // Removed broken Google Maps API Initialization
+  // Location tracking logic
+  useEffect(() => {
+    let locationSubscription: any = null;
+
+    const startTracking = async () => {
+      if (!activeJob) return;
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Location permission is needed to navigate to the patient.');
+        return;
+      }
+
+      locationSubscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          distanceInterval: 10, // Update every 10 meters
+          timeInterval: 5000, // Or every 5 seconds
+        },
+        (location) => {
+          // Emit the live location to the backend
+          socket.emit('update_nurse_location', {
+            bookingId: activeJob.id,
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude
+          });
+        }
+      );
+    };
+
+    if (activeJob) {
+      startTracking();
+    } else {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    }
+
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    };
+  }, [activeJob]);
 
   const fetchJobs = async () => {
     if (!isOnline) return;
     try {
-      const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
       const userStr = await AsyncStorage.getItem('user');
       const u = userStr ? JSON.parse(userStr) : null;
       if (!u || !u.token) return;
@@ -47,12 +111,6 @@ export default function NurseDashboard({ navigation }: any) {
       });
       const data = await res.json();
       
-      const activeRes = await fetch(`${BASE_URL}/api/bookings/patient`, { // We can use patient endpoint or create a nurse one, but the existing patient endpoint fetches user's bookings.
-         headers: { Authorization: `Bearer ${u.token}` }
-      });
-      // Actually, wait, getPatientBookings fetches by patientId. We need a way to get nurse's active bookings.
-      // Since I didn't make a specific getActiveJob endpoint for nurses, let me fetch /api/bookings/available and if not there, I will just rely on the activeJob state, or let's add a quick client-side hack for V1 or use the state.
-      // Better: we can just track `activeJob` state locally. Wait, if app restarts, they lose it. Let's just track it in state for this demo.
       if (data.success) {
         setAvailableJobs(data.bookings);
       }
