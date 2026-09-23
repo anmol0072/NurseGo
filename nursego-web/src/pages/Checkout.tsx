@@ -8,7 +8,8 @@ export default function Checkout() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const categoryName = queryParams.get('category') || 'Medical Procedures';
+  const serviceName = queryParams.get('name') || 'Medical Service';
+  const servicePrice = parseInt(queryParams.get('price') || '500');
 
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'cash'>('cash');
   const [loading, setLoading] = useState(false);
@@ -32,7 +33,7 @@ export default function Checkout() {
 
   const handleBooking = async () => {
     setLoading(true);
-    const amount = 500; // Hardcoded for demo
+    const amount = servicePrice;
 
     if (paymentMethod === 'cash') {
       try {
@@ -44,7 +45,7 @@ export default function Checkout() {
           },
           body: JSON.stringify({
             patientId: user.id,
-            serviceName: categoryName,
+            serviceName: serviceName,
             totalAmount: amount,
             distance: 4,
             paymentMethod: 'cash',
@@ -77,7 +78,7 @@ export default function Checkout() {
           amount: orderData.amount,
           currency: "INR",
           name: "NurseGo",
-          description: `Payment for ${categoryName}`,
+          description: `Payment for ${serviceName}`,
           order_id: orderData.id,
           handler: async function (response: any) {
             // Payment success, create booking
@@ -89,7 +90,7 @@ export default function Checkout() {
               },
               body: JSON.stringify({
                 patientId: user.id,
-                serviceName: categoryName,
+                serviceName: serviceName,
                 totalAmount: amount,
                 distance: 4,
                 paymentMethod: 'card',
@@ -140,11 +141,11 @@ export default function Checkout() {
           <div className="bg-blue-50 rounded-xl p-4 flex items-center justify-between mb-8">
             <div>
               <p className="text-blue-600 text-sm font-bold uppercase tracking-wider">Service</p>
-              <p className="text-lg font-bold text-slate-900">{categoryName}</p>
+              <p className="text-lg font-bold text-slate-900">{serviceName}</p>
             </div>
             <div className="text-right">
               <p className="text-blue-600 text-sm font-bold uppercase tracking-wider">Total</p>
-              <p className="text-lg font-bold text-slate-900">₹500</p>
+              <p className="text-lg font-bold text-slate-900">₹{servicePrice}</p>
             </div>
           </div>
 

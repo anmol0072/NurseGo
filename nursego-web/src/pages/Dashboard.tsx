@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Activity, Stethoscope, FileText, Pill, LogOut, ChevronRight, CheckCircle } from 'lucide-react';
+import { Activity, Stethoscope, FileText, Pill, LogOut, ChevronRight, Syringe } from 'lucide-react';
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
+  const [services, setServices] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,6 +14,16 @@ export default function Dashboard() {
     } else {
       setUser(JSON.parse(userData));
     }
+
+    // Fetch dynamic services from the backend
+    fetch('https://nursenow.onrender.com/api/services')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setServices(data.data);
+        }
+      })
+      .catch(err => console.error('Failed to load services', err));
   }, [navigate]);
 
   const handleLogout = () => {
@@ -20,12 +31,6 @@ export default function Dashboard() {
     localStorage.removeItem('token');
     navigate('/');
   };
-
-  const categories = [
-    { id: 'medical', name: 'Medical Procedures', icon: <Stethoscope className="h-8 w-8 text-blue-500" />, desc: 'IV medication, catheterization, wound dressing' },
-    { id: 'lab', name: 'Laboratory Services', icon: <Activity className="h-8 w-8 text-cyan-500" />, desc: 'Blood sample collection with digital reporting' },
-    { id: 'radiology', name: 'Radiology', icon: <FileText className="h-8 w-8 text-indigo-500" />, desc: 'Portable X-ray services at your home' }
-  ];
 
   if (!user) return null;
 
@@ -69,20 +74,25 @@ export default function Dashboard() {
               <p className="text-slate-500 mt-2">What healthcare service do you need today?</p>
             </div>
 
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Our Services</h2>
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Available Services</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              {categories.map(cat => (
-                <Link to={`/checkout?category=${cat.name}`} key={cat.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group cursor-pointer">
-                  <div className="h-14 w-14 bg-slate-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    {cat.icon}
+              {services.map(service => (
+                <Link to={`/checkout?serviceId=${service.id}&name=${encodeURIComponent(service.name)}&price=${service.basePrice}`} key={service.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition-all group cursor-pointer flex flex-col justify-between">
+                  <div>
+                    <div className="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Syringe className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">{service.name}</h3>
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center justify-between">
-                    {cat.name}
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="font-bold text-blue-600 text-xl">₹{service.basePrice}</span>
                     <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600" />
-                  </h3>
-                  <p className="text-slate-500 text-sm">{cat.desc}</p>
+                  </div>
                 </Link>
               ))}
+              {services.length === 0 && (
+                <p className="text-slate-500 col-span-3">Loading services from backend...</p>
+              )}
             </div>
 
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white flex flex-col md:flex-row items-center justify-between shadow-lg">

@@ -16,7 +16,10 @@ function Home() {
               <a href="#services" className="text-slate-600 hover:text-blue-600 font-medium">Services</a>
               <a href="#how-it-works" className="text-slate-600 hover:text-blue-600 font-medium">How it Works</a>
               <a href="#download" className="text-slate-600 hover:text-blue-600 font-medium">Download App</a>
-              <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium border border-blue-600 px-4 py-1 rounded-full">Patient Login</a>
+              <div className="flex gap-2">
+                <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium border border-blue-600 px-4 py-1 rounded-full text-sm flex items-center">Patient Login</a>
+                <a href="/login" className="text-slate-700 hover:text-slate-900 font-medium border border-slate-300 px-4 py-1 rounded-full text-sm flex items-center">Nurse Login</a>
+              </div>
             </div>
           </div>
         </div>
