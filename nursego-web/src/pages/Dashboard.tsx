@@ -12,7 +12,7 @@ export default function Dashboard() {
   const [token, setToken] = useState<string>('');
   const [services, setServices] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [patientLocation, setPatientLocation] = useState(defaultCenter);
   const [nearbyNurses, setNearbyNurses] = useState<Record<string, {lat: number, lng: number}>>({});
   
@@ -120,41 +120,41 @@ export default function Dashboard() {
           </button>
 
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">Health & Family</div>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('health-records')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'health-records' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <Stethoscope className="h-5 w-5 mr-3" /> Health Records
           </button>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('medications')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'medications' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <Pill className="h-5 w-5 mr-3" /> Medications
           </button>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('chronic')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'chronic' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <Activity className="h-5 w-5 mr-3" /> Chronic Disease
           </button>
 
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">More</div>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('ai-assistant')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'ai-assistant' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <Activity className="h-5 w-5 mr-3" /> AI Assistant
           </button>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('offers')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'offers' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <Activity className="h-5 w-5 mr-3" /> Offers & Promos
           </button>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('refer')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'refer' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <Activity className="h-5 w-5 mr-3" /> Refer a Friend
           </button>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('emergency')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'emergency' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <Activity className="h-5 w-5 mr-3" /> Emergency Contacts
           </button>
 
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">Account & Settings</div>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('profile')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'profile' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <User className="h-5 w-5 mr-3" /> Profile & Personal Info
           </button>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'settings' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <Settings className="h-5 w-5 mr-3" /> Settings
           </button>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('terms')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'terms' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <FileText className="h-5 w-5 mr-3" /> Terms & Conditions
           </button>
-          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button onClick={() => setActiveTab('legal')} className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'legal' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}>
             <Shield className="h-5 w-5 mr-3" /> Legal & Policies
           </button>
         </div>
@@ -286,6 +286,60 @@ export default function Dashboard() {
                       </div>
                     ))
                   )}
+                </div>
+              </>
+            ) : activeTab === 'profile' ? (
+              <>
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-slate-900">Profile & Personal Info</h1>
+                  <p className="text-slate-500 mt-2">Manage your account details and preferences.</p>
+                </div>
+                
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                  <div className="p-8 border-b border-slate-100 flex items-center gap-6">
+                    <div className="h-24 w-24 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-3xl">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-900">{user.name}</h2>
+                      <p className="text-slate-500">{user.email}</p>
+                      <span className="inline-block mt-2 px-3 py-1 bg-blue-50 text-blue-700 text-sm font-bold rounded-full">Patient Account</span>
+                    </div>
+                  </div>
+                  <div className="p-8 space-y-6">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+                      <input type="text" className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 text-slate-900 focus:outline-none" defaultValue={user.name} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                      <input type="email" className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 text-slate-900 focus:outline-none" defaultValue={user.email} disabled />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
+                      <input type="tel" className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 text-slate-900 focus:outline-none focus:border-blue-500" placeholder="Add phone number..." />
+                    </div>
+                    <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors">
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-slate-900 capitalize">
+                    {activeTab.replace('-', ' ')}
+                  </h1>
+                  <p className="text-slate-500 mt-2">Manage your {activeTab.replace('-', ' ')} here.</p>
+                </div>
+                
+                <div className="bg-white p-12 rounded-2xl border border-slate-100 text-center shadow-sm">
+                  <Activity className="h-16 w-16 text-slate-200 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Coming Soon</h3>
+                  <p className="text-slate-500 max-w-md mx-auto">
+                    The {activeTab.replace('-', ' ')} feature is currently under development for the web version. Check back soon or use our mobile app for full access.
+                  </p>
                 </div>
               </>
             )}
