@@ -236,7 +236,7 @@ export default function Dashboard() {
                   <button className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 transition-colors">Chat Now</button>
                 </div>
               </>
-            ) : (
+            ) : activeTab === 'bookings' ? (
               <>
                 <div className="mb-8">
                   <h1 className="text-3xl font-bold text-slate-900">My Bookings</h1>
