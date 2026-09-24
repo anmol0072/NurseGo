@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Activity, Stethoscope, FileText, Pill, LogOut, ChevronRight, Syringe, MapPin, Clock, User, Settings, Shield } from 'lucide-react';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 
 const mapContainerStyle = { width: '100%', height: '300px', borderRadius: '1rem' };
 const defaultCenter = { lat: 28.6139, lng: 77.2090 };
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
-  const [token, setToken] = useState<string>('');
+  
   const [services, setServices] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -32,7 +32,7 @@ export default function Dashboard() {
     } 
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
-    setToken(userToken);
+    
 
     // Get patient's live location
     if (navigator.geolocation) {

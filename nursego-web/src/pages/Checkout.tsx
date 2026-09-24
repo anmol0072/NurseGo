@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Activity, ArrowLeft, Upload, MapPin, CreditCard, Banknote } from 'lucide-react';
 
@@ -80,7 +80,7 @@ export default function Checkout() {
           name: "NurseGo",
           description: `Payment for ${serviceName}`,
           order_id: orderData.id,
-          handler: async function (response: any) {
+          handler: async function () {
             // Payment success, create booking
             const bookingRes = await fetch('https://nursenow.onrender.com/api/bookings', {
               method: 'POST',

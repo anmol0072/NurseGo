@@ -1,5 +1,5 @@
-import React from 'react';
-import { Stethoscope, Activity, FileText, MapPin, Download, ShieldCheck, Clock, ChevronRight } from 'lucide-react';
+
+import { Stethoscope, Activity, FileText, MapPin, Download, ChevronRight } from 'lucide-react';
 
 function Home() {
   return (

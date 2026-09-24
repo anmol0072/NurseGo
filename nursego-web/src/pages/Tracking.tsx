@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Activity, ArrowLeft, Navigation } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
@@ -11,7 +11,7 @@ export default function Tracking() {
   const [user, setUser] = useState<any>(null);
   const [bookingStatus, setBookingStatus] = useState('Looking for nearby nurses...');
   const [nurseLocation, setNurseLocation] = useState(defaultCenter);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,7 +36,7 @@ export default function Tracking() {
 
     // Connect to WebSocket Server
     const newSocket = io('https://nursenow.onrender.com');
-    setSocket(newSocket);
+    
 
     // Join patient room
     newSocket.emit('join_room', `patient_${parsedUser.id}`);

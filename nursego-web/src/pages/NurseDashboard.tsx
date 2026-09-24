@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, LogOut, MapPin, CheckCircle, Clock, Navigation } from 'lucide-react';
+import { Activity, LogOut, MapPin, Clock, Navigation } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 
 export default function NurseDashboard() {
@@ -9,7 +9,7 @@ export default function NurseDashboard() {
   const [availableJobs, setAvailableJobs] = useState<any[]>([]);
   const [activeJob, setActiveJob] = useState<any>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
-  const locationInterval = useRef<NodeJS.Timeout | null>(null);
+  const locationInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   
   const navigate = useNavigate();
 
@@ -55,7 +55,7 @@ export default function NurseDashboard() {
     });
 
     // Broadcast idle location
-    let idleInterval: NodeJS.Timeout;
+    let idleInterval: ReturnType<typeof setInterval>;
     if (navigator.geolocation) {
       idleInterval = setInterval(() => {
         if (!activeJob) { // Only broadcast idle if not on an active job
