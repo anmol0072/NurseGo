@@ -29,6 +29,16 @@ export const initSocket = (server: HttpServer) => {
       console.log(`Socket ${socket.id} joined booking room: ${bookingId}`);
     });
 
+    // Patient joins a global room to see all nearby nurses
+    socket.on('join_global_patients', () => {
+      socket.join('global_patients');
+    });
+
+    // Nurse broadcasts their location before being booked
+    socket.on('idle_nurse_location', (data: { nurseId: string; latitude: number; longitude: number }) => {
+      io.to('global_patients').emit('nearby_nurse_update', data);
+    });
+
     socket.on('update_nurse_location', (data: { bookingId: string; latitude: number; longitude: number }) => {
       // Broadcast the location to the patient in the booking room
       io.to(`booking_${data.bookingId}`).emit('nurse_location', {
