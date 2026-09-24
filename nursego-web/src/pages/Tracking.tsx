@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Activity, ArrowLeft, Navigation } from 'lucide-react';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
 const mapContainerStyle = { width: '100%', height: '500px', borderRadius: '1rem' };
