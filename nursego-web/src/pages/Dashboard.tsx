@@ -104,22 +104,48 @@ export default function Dashboard() {
           <Activity className="h-6 w-6 text-blue-600 mr-2" />
           <span className="font-bold text-xl text-slate-900">NurseGo</span>
         </div>
-        <div className="flex-1 py-6 px-4 space-y-2">
+        <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-3 mt-2">Main</div>
           <button 
             onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'dashboard' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
+            className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'dashboard' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
           >
             <Activity className="h-5 w-5 mr-3" /> Dashboard
           </button>
           <button 
             onClick={() => setActiveTab('bookings')}
-            className={`w-full flex items-center px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'bookings' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
+            className={`w-full flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'bookings' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
           >
             <FileText className="h-5 w-5 mr-3" /> My Bookings
           </button>
+
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">Health & Family</div>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Stethoscope className="h-5 w-5 mr-3" /> Health Records
+          </button>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Pill className="h-5 w-5 mr-3" /> Medications
+          </button>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Activity className="h-5 w-5 mr-3" /> Chronic Disease
+          </button>
+
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">More</div>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Activity className="h-5 w-5 mr-3" /> AI Assistant
+          </button>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Activity className="h-5 w-5 mr-3" /> Offers & Promos
+          </button>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Activity className="h-5 w-5 mr-3" /> Refer a Friend
+          </button>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Activity className="h-5 w-5 mr-3" /> Emergency Contacts
+          </button>
         </div>
         <div className="p-4 border-t border-slate-100">
-          <button onClick={handleLogout} className="flex items-center px-4 py-2 text-slate-600 hover:text-red-600 font-medium w-full">
+          <button onClick={handleLogout} className="flex items-center px-3 py-2 text-slate-600 hover:text-red-600 font-medium w-full">
             <LogOut className="h-5 w-5 mr-3" /> Sign out
           </button>
         </div>
