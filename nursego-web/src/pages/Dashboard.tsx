@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Activity, Stethoscope, FileText, Pill, LogOut, ChevronRight, Syringe, MapPin, Clock } from 'lucide-react';
+import { Activity, Stethoscope, FileText, Pill, LogOut, ChevronRight, Syringe, MapPin, Clock, User, Settings, Shield } from 'lucide-react';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 import { io, Socket } from 'socket.io-client';
 
@@ -142,6 +142,20 @@ export default function Dashboard() {
           </button>
           <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
             <Activity className="h-5 w-5 mr-3" /> Emergency Contacts
+          </button>
+
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">Account & Settings</div>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <User className="h-5 w-5 mr-3" /> Profile & Personal Info
+          </button>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Settings className="h-5 w-5 mr-3" /> Settings
+          </button>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <FileText className="h-5 w-5 mr-3" /> Terms & Conditions
+          </button>
+          <button className="w-full flex items-center px-3 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Shield className="h-5 w-5 mr-3" /> Legal & Policies
           </button>
         </div>
         <div className="p-4 border-t border-slate-100">
