@@ -54,11 +54,28 @@ export default function NurseDashboard() {
       setAvailableJobs(prev => prev.filter(b => b.id !== bookingId));
     });
 
+    // Broadcast idle location
+    let idleInterval: NodeJS.Timeout;
+    if (navigator.geolocation) {
+      idleInterval = setInterval(() => {
+        if (!activeJob) { // Only broadcast idle if not on an active job
+          navigator.geolocation.getCurrentPosition((position) => {
+            newSocket.emit('idle_nurse_location', {
+              nurseId: parsedUser.id,
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            });
+          });
+        }
+      }, 5000);
+    }
+
     return () => {
+      if (idleInterval) clearInterval(idleInterval);
       if (locationInterval.current) clearInterval(locationInterval.current);
       newSocket.disconnect();
     };
-  }, [navigate]);
+  }, [navigate, activeJob]);
 
   const handleAcceptJob = async (jobId: string) => {
     try {
