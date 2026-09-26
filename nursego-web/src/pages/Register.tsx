@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Activity, User, Mail, Lock, Phone, AlertCircle } from 'lucide-react';
+import { Activity, User, Mail, Lock, Phone, AlertCircle, Upload, Shield } from 'lucide-react';
 
 export default function Register() {
+  const [role, setRole] = useState<'PATIENT' | 'NURSE'>('PATIENT');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -19,13 +20,17 @@ export default function Register() {
       const res = await fetch('https://nursenow.onrender.com/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, password, role: 'PATIENT' })
+        body: JSON.stringify({ name, email, phone, password, role })
       });
       const data = await res.json();
       if (data.success) {
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('token', data.token);
-        navigate('/dashboard');
+        if (role === 'NURSE') {
+          navigate('/nurse-dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         setError(data.message || 'Registration failed');
       }
