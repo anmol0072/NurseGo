@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Stethoscope, FileText, MapPin, Download, ChevronRight, Menu, X } from 'lucide-react';
+import { Stethoscope, Activity, FileText, MapPin, Download, ChevronRight, Menu, X } from 'lucide-react';
 
 function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
