@@ -1,28 +1,55 @@
 
-import { Stethoscope, Activity, FileText, MapPin, Download, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { Stethoscope, FileText, MapPin, Download, ChevronRight, Menu, X } from 'lucide-react';
 
 function Home() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col">
       {/* Navigation */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center gap-2">
-              <Activity className="h-8 w-8 text-blue-600" />
+              <img src="/nursego_logo.png" alt="NurseGo Logo" className="h-8 w-auto object-contain" />
               <span className="font-bold text-2xl text-slate-900">NurseGo</span>
             </div>
-            <div className="hidden md:flex space-x-8">
+            
+            {/* Desktop Menu */}
+            <div className="hidden md:flex space-x-8 items-center">
               <a href="#services" className="text-slate-600 hover:text-blue-600 font-medium">Services</a>
               <a href="#how-it-works" className="text-slate-600 hover:text-blue-600 font-medium">How it Works</a>
               <a href="#download" className="text-slate-600 hover:text-blue-600 font-medium">Download App</a>
               <div className="flex gap-2">
-                <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium border border-blue-600 px-4 py-1 rounded-full text-sm flex items-center">Patient Login</a>
-                <a href="/login" className="text-slate-700 hover:text-slate-900 font-medium border border-slate-300 px-4 py-1 rounded-full text-sm flex items-center">Nurse Login</a>
+                <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium border border-blue-600 px-4 py-1.5 rounded-full text-sm">Patient Login</a>
+                <a href="/login" className="text-slate-700 hover:text-slate-900 font-medium border border-slate-300 px-4 py-1.5 rounded-full text-sm">Nurse Login</a>
               </div>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center">
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-slate-600">
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
             </div>
           </div>
         </div>
+        
+        {/* Mobile Menu Panel */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-white border-t border-slate-100 px-4 pt-2 pb-6 shadow-lg absolute w-full">
+            <div className="flex flex-col space-y-4 mt-4">
+              <a href="#services" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 font-medium">Services</a>
+              <a href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 font-medium">How it Works</a>
+              <a href="#download" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 font-medium">Download App</a>
+              <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
+                <a href="/login" className="text-blue-600 text-center font-bold border border-blue-600 px-4 py-2 rounded-lg">Patient Login</a>
+                <a href="/login" className="text-slate-700 text-center font-bold border border-slate-300 px-4 py-2 rounded-lg bg-slate-50">Nurse Login</a>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -178,6 +205,13 @@ function Home() {
               <p className="text-slate-600 leading-relaxed">Once a nurse accepts your booking, you can track their live GPS location directly on the NurseGo app or web dashboard so you know exactly when they will arrive.</p>
             </div>
           </div>
+          <div className="mt-12 bg-white border border-slate-200 rounded-2xl p-8 text-center max-w-3xl mx-auto shadow-sm">
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Have a different question?</h3>
+            <p className="text-slate-600 mb-6">Our support team is available to help you with any inquiries regarding our services.</p>
+            <a href="https://wa.me/916284833390" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-green-500 hover:bg-green-600 transition-colors">
+              Ask us on WhatsApp
+            </a>
+          </div>
         </div>
       </section>
 
@@ -187,7 +221,7 @@ function Home() {
            <div className="grid md:grid-cols-3 gap-8">
               <div>
                 <div className="flex items-center gap-2 justify-center md:justify-start mb-4">
-                  <Activity className="h-6 w-6 text-blue-600" />
+                  <img src="/nursego_logo.png" alt="NurseGo Logo" className="h-6 w-auto object-contain" />
                   <span className="font-bold text-xl text-slate-900">NurseGo</span>
                 </div>
                 <p className="text-slate-500 text-sm">NurseGO Healthcare Company.<br/>Professional medical care at your doorstep.</p>
