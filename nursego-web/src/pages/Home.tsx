@@ -136,6 +136,34 @@ function Home() {
          </div>
       </section>
 
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">Frequently Asked Questions</h2>
+            <p className="text-slate-600">Got questions? We've got answers.</p>
+          </div>
+          <div className="space-y-6">
+            <div className="border border-slate-200 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">How quickly can a nurse reach my home?</h3>
+              <p className="text-slate-600">Depending on your location and nurse availability, a certified nurse can reach your doorstep in as little as 30 to 60 minutes after your booking is confirmed.</p>
+            </div>
+            <div className="border border-slate-200 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Are your nurses certified?</h3>
+              <p className="text-slate-600">Yes, 100% of our nursing staff are INC/State Board certified professionals. We thoroughly verify their medical licenses and experience certificates before they can accept bookings.</p>
+            </div>
+            <div className="border border-slate-200 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Do I need a doctor's prescription?</h3>
+              <p className="text-slate-600">Yes, for all medical procedures (like IV injections, catheterization, wound dressing), you must upload a valid doctor's prescription during checkout for safety and compliance.</p>
+            </div>
+            <div className="border border-slate-200 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">How does the live tracking work?</h3>
+              <p className="text-slate-600">Once a nurse accepts your booking, you can track their live GPS location directly on the NurseGo app or web dashboard so you know exactly when they will arrive.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section id="download" className="py-20 bg-blue-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
