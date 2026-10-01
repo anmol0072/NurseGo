@@ -34,7 +34,7 @@ function Home() {
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center gap-2">
               <img src="/nursego_logo.png" alt="NurseGo Logo" className="h-8 w-auto object-contain" />
-              <span className="font-bold text-2xl text-slate-900">NurseGo</span>
+              <span className="font-bold text-2xl"><span className="text-blue-600">Nurse</span><span className="text-green-500">Go</span></span>
             </div>
             
             {/* Desktop Menu */}
@@ -230,7 +230,7 @@ function Home() {
               <div>
                 <div className="flex items-center gap-2 justify-center md:justify-start mb-4">
                   <img src="/nursego_logo.png" alt="NurseGo Logo" className="h-6 w-auto object-contain" />
-                  <span className="font-bold text-xl text-slate-900">NurseGo</span>
+                  <span className="font-bold text-xl"><span className="text-blue-600">Nurse</span><span className="text-green-500">Go</span></span>
                 </div>
                 <p className="text-slate-500 text-sm">NurseGO Healthcare Company.<br/>Professional medical care at your doorstep.</p>
               </div>
