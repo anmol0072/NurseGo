@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Stethoscope, Activity, FileText, MapPin, Download, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Stethoscope, Activity, FileText, Download, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
 import { faqs } from '../faqData';
 
 const AccordionItem = ({ question, answer }: { question: string, answer: string }) => {
@@ -22,6 +22,69 @@ const AccordionItem = ({ question, answer }: { question: string, answer: string 
     </div>
   );
 };
+
+const slides = [
+  '/slides/slide1.jpeg',
+  '/slides/slide2.jpeg',
+  '/slides/slide3.jpeg',
+  '/slides/slide4.jpeg',
+  '/slides/slide5.jpeg',
+  '/slides/slide6.jpeg',
+  '/slides/slide7.jpeg'
+];
+
+function HeroSlideshow() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative h-[600px] w-full overflow-hidden bg-slate-900">
+      {slides.map((slide, index) => (
+        <div
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-1000 ${
+            index === currentSlide ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <img
+            src={slide}
+            alt={`Healthcare Slide ${index + 1}`}
+            className="object-cover w-full h-full object-center"
+          />
+          <div className="absolute inset-0 bg-black/60" />
+        </div>
+      ))}
+      
+      <div className="absolute inset-0 flex items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="max-w-2xl text-white">
+            <h1 className="text-4xl lg:text-6xl font-extrabold leading-tight mb-6">
+              Professional Healthcare at Your <span className="text-blue-400">Doorstep</span>
+            </h1>
+            <p className="text-lg lg:text-xl text-slate-200 mb-8">
+              Skip the hospital queues. NurseGo connects you with certified paramedical staff, nurses, and lab technicians for medical care, tests, and x-rays directly in your home.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a href="#download" className="inline-flex justify-center items-center px-8 py-3.5 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                Download the App
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </a>
+              <a href="#services" className="inline-flex justify-center items-center px-8 py-3.5 border-2 border-white/30 text-base font-medium rounded-full text-white hover:bg-white/10 transition-colors">
+                Explore Services
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -73,52 +136,8 @@ function Home() {
         )}
       </nav>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-50 to-cyan-50 py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl lg:text-6xl font-extrabold text-slate-900 leading-tight mb-6">
-                Professional Healthcare at Your <span className="text-blue-600">Doorstep</span>
-              </h1>
-              <p className="text-lg text-slate-600 mb-8 max-w-lg">
-                Skip the hospital queues. NurseGo connects you with certified paramedical staff, nurses, and lab technicians for medical care, tests, and x-rays directly in your home.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a href="#download" className="inline-flex justify-center items-center px-8 py-3.5 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-                  Download the App
-                  <ChevronRight className="ml-2 h-5 w-5" />
-                </a>
-                <a href="#services" className="inline-flex justify-center items-center px-8 py-3.5 border-2 border-slate-200 text-base font-medium rounded-full text-slate-700 bg-white hover:bg-slate-50 transition-colors">
-                  Explore Services
-                </a>
-              </div>
-            </div>
-            <div className="relative hidden lg:block">
-              <div className="w-64 h-[500px] bg-slate-900 rounded-[3rem] mx-auto border-[8px] border-slate-900 shadow-2xl overflow-hidden relative">
-                <div className="absolute top-0 inset-x-0 h-6 bg-slate-900 rounded-b-3xl z-10 w-32 mx-auto"></div>
-                <div className="bg-blue-600 h-1/3 p-6 flex flex-col justify-end text-white">
-                  <h3 className="font-bold text-lg">NurseGo</h3>
-                  <p className="text-blue-100 text-sm">Your care is on the way</p>
-                </div>
-                <div className="bg-slate-50 h-2/3 p-4 space-y-4">
-                  <div className="h-20 bg-white rounded-xl shadow-sm p-3 flex items-center gap-3">
-                     <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                       <MapPin className="h-5 w-5 text-green-600" />
-                     </div>
-                     <div>
-                       <div className="h-2 w-20 bg-slate-200 rounded mb-2"></div>
-                       <div className="h-2 w-12 bg-slate-200 rounded"></div>
-                     </div>
-                  </div>
-                  <div className="h-20 bg-white rounded-xl shadow-sm p-3"></div>
-                  <div className="h-20 bg-white rounded-xl shadow-sm p-3"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Slideshow Section */}
+      <HeroSlideshow />
 
       {/* Services Section */}
       <section id="services" className="py-20 bg-white">
