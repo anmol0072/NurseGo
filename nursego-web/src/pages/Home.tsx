@@ -106,8 +106,8 @@ function Home() {
               <a href="#how-it-works" className="text-slate-600 hover:text-blue-600 font-medium">How it Works</a>
               <a href="#download" className="text-slate-600 hover:text-blue-600 font-medium">Download App</a>
               <div className="flex gap-2">
-                <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium border border-blue-600 px-4 py-1.5 rounded-full text-sm">Patient Login</a>
-                <a href="/login" className="text-slate-700 hover:text-slate-900 font-medium border border-slate-300 px-4 py-1.5 rounded-full text-sm">Nurse Login</a>
+                <a href="/login?role=PATIENT" className="text-blue-600 hover:text-blue-700 font-medium border border-blue-600 px-4 py-1.5 rounded-full text-sm">Patient Login</a>
+                <a href="/login?role=NURSE" className="text-slate-700 hover:text-slate-900 font-medium border border-slate-300 px-4 py-1.5 rounded-full text-sm">Nurse Login</a>
               </div>
             </div>
 
@@ -128,8 +128,8 @@ function Home() {
               <a href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 font-medium">How it Works</a>
               <a href="#download" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 font-medium">Download App</a>
               <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-                <a href="/login" className="text-blue-600 text-center font-bold border border-blue-600 px-4 py-2 rounded-lg">Patient Login</a>
-                <a href="/login" className="text-slate-700 text-center font-bold border border-slate-300 px-4 py-2 rounded-lg bg-slate-50">Nurse Login</a>
+                <a href="/login?role=PATIENT" className="text-blue-600 text-center font-bold border border-blue-600 px-4 py-2 rounded-lg">Patient Login</a>
+                <a href="/login?role=NURSE" className="text-slate-700 text-center font-bold border border-slate-300 px-4 py-2 rounded-lg bg-slate-50">Nurse Login</a>
               </div>
             </div>
           </div>
