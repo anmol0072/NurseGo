@@ -1,6 +1,27 @@
 
 import { useState } from 'react';
-import { Stethoscope, Activity, FileText, MapPin, Download, ChevronRight, Menu, X } from 'lucide-react';
+import { Stethoscope, Activity, FileText, MapPin, Download, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
+import { faqs } from '../faqData';
+
+const AccordionItem = ({ question, answer }: { question: string, answer: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border border-slate-200 rounded-xl overflow-hidden mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-6 py-4 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors text-left"
+      >
+        <h3 className="text-lg font-bold text-slate-900 pr-4">{question}</h3>
+        <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform duration-300 ${isOpen ? 'transform rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <div className="px-6 pb-5 bg-white">
+          <p className="text-slate-600 leading-relaxed whitespace-pre-line">{answer}</p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -187,28 +208,15 @@ function Home() {
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Frequently Asked Questions</h2>
             <p className="text-slate-600">Got questions? We've got answers.</p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold text-slate-900 mb-3">How quickly can a nurse reach my home?</h3>
-              <p className="text-slate-600 leading-relaxed">Depending on your location and nurse availability, a certified nurse can reach your doorstep in as little as 30 to 60 minutes after your booking is confirmed.</p>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Are your nurses certified?</h3>
-              <p className="text-slate-600 leading-relaxed">Yes, 100% of our nursing staff are INC/State Board certified professionals. We thoroughly verify their medical licenses and experience certificates before they can accept bookings.</p>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Do I need a doctor's prescription?</h3>
-              <p className="text-slate-600 leading-relaxed">Yes, for all medical procedures (like IV injections, catheterization, wound dressing), you must upload a valid doctor's prescription during checkout for safety and compliance.</p>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold text-slate-900 mb-3">How does the live tracking work?</h3>
-              <p className="text-slate-600 leading-relaxed">Once a nurse accepts your booking, you can track their live GPS location directly on the NurseGo app or web dashboard so you know exactly when they will arrive.</p>
-            </div>
+          <div className="max-w-4xl mx-auto max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} question={faq.q} answer={faq.a} />
+            ))}
           </div>
           <div className="mt-12 bg-white border border-slate-200 rounded-2xl p-8 text-center max-w-3xl mx-auto shadow-sm">
             <h3 className="text-xl font-bold text-slate-900 mb-2">Have a different question?</h3>
             <p className="text-slate-600 mb-6">Our support team is available to help you with any inquiries regarding our services.</p>
-            <a href="https://wa.me/916284833390" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-green-500 hover:bg-green-600 transition-colors">
+            <a href="https://wa.me/917814012460" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-green-500 hover:bg-green-600 transition-colors">
               Ask us on WhatsApp
             </a>
           </div>
@@ -229,7 +237,7 @@ function Home() {
               <div>
                 <h4 className="font-bold text-slate-900 mb-4">Contact Us</h4>
                 <p className="text-slate-500 text-sm mb-2">Email: nursegohealthcarecompany@gmail.com</p>
-                <p className="text-slate-500 text-sm">WhatsApp: +91 6284833390</p>
+                <p className="text-slate-500 text-sm">WhatsApp: +91 7814012460</p>
               </div>
               <div>
                 <h4 className="font-bold text-slate-900 mb-4">Join as a Nurse</h4>
@@ -244,7 +252,7 @@ function Home() {
 
       {/* Floating WhatsApp Button */}
       <a 
-        href="https://wa.me/916284833390" 
+        href="https://wa.me/917814012460" 
         target="_blank" 
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-colors z-50 flex items-center justify-center group"

@@ -1,0 +1,22 @@
+﻿export const faqs = [
+  { q: "What is NurseGo?", a: "NurseGo is a home healthcare service that helps patients book nursing and healthcare services at home." },
+  { q: "Where does NurseGo provide home healthcare services?", a: "NurseGo is initially focused on providing services in Chandigarh, Panchkula and Zirakpur (Tricity), with plans for expansion." },
+  { q: "How can I book a NurseGo service?", a: "You can book a service through the NurseGo app or contact our team through WhatsApp: +91 7814012460 or email nursegohealthcarecompany@gmail.com." },
+  { q: "What services does NurseGo provide?", a: "Services may include IV/IM injections, catheterization, wound dressing, suturing removal, Ryle's tube care, nebulization, nursing care, laboratory sample collection and other home healthcare services." },
+  { q: "Can I book a nurse for home visits?", a: "Yes. You can request a qualified/verified nursing professional for eligible home healthcare services." },
+  { q: "Can I book a service for an elderly family member?", a: "Yes. Family members can arrange eligible home healthcare services for elderly patients." },
+  { q: "Do I need a doctor's prescription for every service?", a: "Some medical procedures or medicines may require a valid doctor's prescription or medical advice. Requirements can vary depending on the service." },
+  { q: "How quickly can a nurse reach my home?", a: "The arrival time depends on location, nurse availability, service type and traffic conditions. The estimated time can be communicated during booking." },
+  { q: "Can I choose a specific nurse?", a: "Nurse availability and selection options may depend on the service and location at the time of booking." },
+  { q: "How do I know whether the nurse is verified?", a: "NurseGo follows a verification process for its partner/associated healthcare professionals and collects relevant professional documentation." },
+  { q: "Can I book a service in advance?", a: "Yes. Where available, you can schedule a service for a preferred date and time." },
+  { q: "Can I cancel my booking?", a: "Yes, subject to NurseGo's cancellation and refund policy. Any applicable cancellation charges will depend on the timing and circumstances of cancellation." },
+  { q: "How much does a NurseGo service cost?", a: "Pricing depends on the service, location, timing and other applicable factors. The applicable price will be shown or communicated before confirmation." },
+  { q: "What payment methods does NurseGo accept?", a: "Depending on the available payment options, patients may be able to pay through UPI, cards and other supported payment methods." },
+  { q: "Can NurseGo provide medicines at home?", a: "Where available, NurseGo may facilitate medicine ordering through partnered pharmacies, subject to prescription requirements and applicable laws." },
+  { q: "Can I get laboratory tests through NurseGo?", a: "Yes. NurseGo may facilitate laboratory sample collection and diagnostic services through partner laboratories, depending on availability." },
+  { q: "Does NurseGo provide X-ray services?", a: "X-ray/diagnostic services may be available through partnered diagnostic providers, subject to location, service availability and applicable requirements." },
+  { q: "What if I have an emergency?", a: "NurseGo is not a replacement for emergency medical services. In a life-threatening emergency, immediately contact your local emergency medical service or visit the nearest hospital." },
+  { q: "How does NurseGo protect my personal and medical information?", a: "NurseGo aims to protect patient information using appropriate security and privacy practices. Patient information should only be accessed and used for legitimate healthcare and service-related purposes." },
+  { q: "How can I contact NurseGo for help?", a: "You can contact NurseGo Healthcare Company through:\n📱 WhatsApp/Phone: +91 7814012460\n📧 Email: nursegohealthcarecompany@gmail.com" }
+];
