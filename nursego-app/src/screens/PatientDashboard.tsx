@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Platform, Image, Linking } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TermsModal from '../components/TermsModal';
@@ -25,6 +26,7 @@ export default function PatientDashboard({ navigation }: any) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [locationText, setLocationText] = useState('Fetching location...');
+  const [coords, setCoords] = useState<{latitude: number, longitude: number} | null>(null);
   const [isMapFullScreen, setIsMapFullScreen] = useState(false);
   const [isSideMenuVisible, setSideMenuVisible] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -85,6 +87,7 @@ export default function PatientDashboard({ navigation }: any) {
           return;
         }
         let location = await Location.getCurrentPositionAsync({});
+        setCoords({ latitude: location.coords.latitude, longitude: location.coords.longitude });
         let geocode = await Location.reverseGeocodeAsync({ latitude: location.coords.latitude, longitude: location.coords.longitude });
         if (geocode && geocode.length > 0) {
           const p = geocode[0];
@@ -168,11 +171,26 @@ export default function PatientDashboard({ navigation }: any) {
                   style={{ position: 'absolute', width: '100%', height: '100%', border: 'none' }}
                 />
               ) : (
-                <Image 
-                  source={{ uri: 'https://cdn.pixabay.com/photo/2019/09/22/16/20/location-4496459_1280.png' }} 
-                  style={{ ...StyleSheet.absoluteFill, width: '100%', height: '100%' }} 
-                  resizeMode="cover"
-                />
+                coords ? (
+                  <MapView
+                    provider={PROVIDER_GOOGLE}
+                    style={{ ...StyleSheet.absoluteFillObject }}
+                    initialRegion={{
+                      latitude: coords.latitude,
+                      longitude: coords.longitude,
+                      latitudeDelta: 0.02,
+                      longitudeDelta: 0.02,
+                    }}
+                  >
+                    <Marker coordinate={coords} title="Your Location" pinColor="blue" />
+                    <Marker coordinate={{ latitude: coords.latitude + 0.005, longitude: coords.longitude + 0.005 }} title="Nurse Asha" />
+                    <Marker coordinate={{ latitude: coords.latitude - 0.005, longitude: coords.longitude - 0.002 }} title="Nurse Priya" />
+                  </MapView>
+                ) : (
+                  <View style={{ flex: 1, backgroundColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: '#64748b' }}>Loading Map...</Text>
+                  </View>
+                )
               )}
             <TouchableOpacity style={styles.expandBtn} onPress={() => setIsMapFullScreen(true)}>
               <Ionicons name="expand" size={16} color="#0f172a" />
@@ -374,11 +392,26 @@ export default function PatientDashboard({ navigation }: any) {
                style={{ position: 'absolute', width: '100%', height: '100%', border: 'none' }}
              />
            ) : (
-             <Image 
-               source={{ uri: 'https://cdn.pixabay.com/photo/2019/09/22/16/20/location-4496459_1280.png' }} 
-               style={{ ...StyleSheet.absoluteFill, width: '100%', height: '100%' }} 
-               resizeMode="cover"
-             />
+             coords ? (
+               <MapView
+                 provider={PROVIDER_GOOGLE}
+                 style={{ ...StyleSheet.absoluteFillObject }}
+                 initialRegion={{
+                   latitude: coords.latitude,
+                   longitude: coords.longitude,
+                   latitudeDelta: 0.02,
+                   longitudeDelta: 0.02,
+                 }}
+               >
+                 <Marker coordinate={coords} title="Your Location" pinColor="blue" />
+                 <Marker coordinate={{ latitude: coords.latitude + 0.005, longitude: coords.longitude + 0.005 }} title="Nurse Asha" />
+                 <Marker coordinate={{ latitude: coords.latitude - 0.005, longitude: coords.longitude - 0.002 }} title="Nurse Priya" />
+               </MapView>
+             ) : (
+               <View style={{ flex: 1, backgroundColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center' }}>
+                 <Text style={{ color: '#64748b' }}>Loading Map...</Text>
+               </View>
+             )
            )}
           <TouchableOpacity style={[styles.mapBackBtn, { top: Math.max(insets.top, 20) }]} onPress={() => setIsMapFullScreen(false)}>
             <Ionicons name="arrow-back" size={24} color="#0f172a" />
