@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 GoogleSignin.configure({
-  webClientId: '216302655182-e1emdqp0h7e01sj7ac41lfacg4f2aqob.apps.googleusercontent.com',
+  webClientId: '216302655182-p9tvd1hq5634jgjnm2td3tsan0kscfl6.apps.googleusercontent.com',
   iosClientId: '216302655182-e1emdqp0h7e01sj7ac41lfacg4f2aqob.apps.googleusercontent.com',
 });
 
