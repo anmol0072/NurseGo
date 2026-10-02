@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Platform, Image, Linking } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TermsModal from '../components/TermsModal';
 import SideMenu from '../components/SideMenu';
@@ -75,9 +76,27 @@ export default function PatientDashboard({ navigation }: any) {
       if (u) setUser(JSON.parse(u));
     };
     loadUser();
-    setTimeout(() => {
-      setLocationText('B-402, Shanti Vihar, New Delhi');
-    }, 1500);
+    
+    const fetchLocation = async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setLocationText('Permission denied. Please enter location.');
+          return;
+        }
+        let location = await Location.getCurrentPositionAsync({});
+        let geocode = await Location.reverseGeocodeAsync({ latitude: location.coords.latitude, longitude: location.coords.longitude });
+        if (geocode && geocode.length > 0) {
+          const p = geocode[0];
+          setLocationText(`${p.street || p.name || ''}, ${p.city || p.subregion || ''}`);
+        } else {
+          setLocationText('Location fetched');
+        }
+      } catch (err) {
+        setLocationText('Failed to get location');
+      }
+    };
+    fetchLocation();
   }, []);
 
   const filteredServices = services.filter(s => {
