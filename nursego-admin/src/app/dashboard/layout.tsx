@@ -13,6 +13,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/dashboard" className="flex items-center px-4 py-3 text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
             <Activity className="w-5 h-5 mr-3" /> Dashboard
           </Link>
+          <Link href="/dashboard/nurses" className="flex items-center px-4 py-3 text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
+            <Activity className="w-5 h-5 mr-3" /> Approvals
+          </Link>
           <Link href="/dashboard/services" className="flex items-center px-4 py-3 text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
             <Settings className="w-5 h-5 mr-3" /> Services
           </Link>

@@ -13,6 +13,7 @@ import uploadRoutes from './routes/upload.routes';
 import settingsRoutes from './routes/settings.routes';
 import servicesRoutes from './routes/services.routes';
 import documentsRoutes from './routes/documents.routes';
+import adminRoutes from './routes/admin.routes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,7 @@ app.use(express.json());
 
 // API Routes
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/bookings', bookingsRoutes);
