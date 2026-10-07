@@ -5,7 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io from 'socket.io-client';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { WebView } from 'react-native-webview';
 
 const { width, height } = Dimensions.get('window');
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
@@ -102,28 +102,14 @@ export default function TrackingScreen({ route, navigation }: any) {
       {/* Map Background */}
       {Platform.OS === 'web' ? (
         <iframe 
-          src="https://www.openstreetmap.org/export/embed.html?bbox=77.10%2C28.50%2C77.30%2C28.70&layer=mapnik"
+          src={`https://www.openstreetmap.org/export/embed.html?bbox=${(nurseLocation?.longitude || 77.2090) - 0.05}%2C${(nurseLocation?.latitude || 28.6139) - 0.05}%2C${(nurseLocation?.longitude || 77.2090) + 0.05}%2C${(nurseLocation?.latitude || 28.6139) + 0.05}&layer=mapnik&marker=${nurseLocation?.latitude || 28.6139}%2C${nurseLocation?.longitude || 77.2090}`}
           style={{ position: 'absolute', width: '100%', height: '100%', border: 'none' }}
         />
       ) : (
-        <MapView
-          provider={PROVIDER_GOOGLE}
+        <WebView 
+          source={{ uri: `https://www.openstreetmap.org/export/embed.html?bbox=${(nurseLocation?.longitude || 77.2090) - 0.05}%2C${(nurseLocation?.latitude || 28.6139) - 0.05}%2C${(nurseLocation?.longitude || 77.2090) + 0.05}%2C${(nurseLocation?.latitude || 28.6139) + 0.05}&layer=mapnik&marker=${nurseLocation?.latitude || 28.6139}%2C${nurseLocation?.longitude || 77.2090}` }}
           style={StyleSheet.absoluteFill}
-          region={{
-            latitude: nurseLocation ? nurseLocation.latitude : 28.6139,
-            longitude: nurseLocation ? nurseLocation.longitude : 77.2090,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
-        >
-          {nurseLocation && (
-            <Marker 
-              coordinate={nurseLocation} 
-              title="Nurse Location"
-              description="Your nurse is on the way"
-            />
-          )}
-        </MapView>
+        />
       )}
 
       {/* Back Button Overlay */}

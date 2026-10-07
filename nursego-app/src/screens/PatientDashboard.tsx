@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Platform, Image, Linking } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TermsModal from '../components/TermsModal';
@@ -172,20 +172,10 @@ export default function PatientDashboard({ navigation }: any) {
                 />
               ) : (
                 coords ? (
-                  <MapView
-                    provider={PROVIDER_GOOGLE}
-                    style={StyleSheet.absoluteFillObject}
-                    initialRegion={{
-                      latitude: coords.latitude,
-                      longitude: coords.longitude,
-                      latitudeDelta: 0.02,
-                      longitudeDelta: 0.02,
-                    }}
-                  >
-                    <Marker coordinate={coords} title="Your Location" pinColor="blue" />
-                    <Marker coordinate={{ latitude: coords.latitude + 0.005, longitude: coords.longitude + 0.005 }} title="Nurse Asha" />
-                    <Marker coordinate={{ latitude: coords.latitude - 0.005, longitude: coords.longitude - 0.002 }} title="Nurse Priya" />
-                  </MapView>
+                  <WebView 
+                    source={{ uri: `https://www.openstreetmap.org/export/embed.html?bbox=${coords.longitude - 0.05}%2C${coords.latitude - 0.05}%2C${coords.longitude + 0.05}%2C${coords.latitude + 0.05}&layer=mapnik&marker=${coords.latitude}%2C${coords.longitude}` }}
+                    style={{ width: '100%', height: '100%', backgroundColor: '#e2e8f0' }}
+                  />
                 ) : (
                   <View style={{ flex: 1, backgroundColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center' }}>
                     <Text style={{ color: '#64748b' }}>Loading Map...</Text>
@@ -393,20 +383,10 @@ export default function PatientDashboard({ navigation }: any) {
              />
            ) : (
              coords ? (
-               <MapView
-                 provider={PROVIDER_GOOGLE}
-                 style={StyleSheet.absoluteFillObject}
-                 initialRegion={{
-                   latitude: coords.latitude,
-                   longitude: coords.longitude,
-                   latitudeDelta: 0.02,
-                   longitudeDelta: 0.02,
-                 }}
-               >
-                 <Marker coordinate={coords} title="Your Location" pinColor="blue" />
-                 <Marker coordinate={{ latitude: coords.latitude + 0.005, longitude: coords.longitude + 0.005 }} title="Nurse Asha" />
-                 <Marker coordinate={{ latitude: coords.latitude - 0.005, longitude: coords.longitude - 0.002 }} title="Nurse Priya" />
-               </MapView>
+               <WebView 
+                 source={{ uri: `https://www.openstreetmap.org/export/embed.html?bbox=${coords.longitude - 0.05}%2C${coords.latitude - 0.05}%2C${coords.longitude + 0.05}%2C${coords.latitude + 0.05}&layer=mapnik&marker=${coords.latitude}%2C${coords.longitude}` }}
+                 style={{ width: '100%', height: '100%', backgroundColor: '#fff' }}
+               />
              ) : (
                <View style={{ flex: 1, backgroundColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center' }}>
                  <Text style={{ color: '#64748b' }}>Loading Map...</Text>
