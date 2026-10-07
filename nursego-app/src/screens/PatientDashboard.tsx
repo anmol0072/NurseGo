@@ -174,7 +174,7 @@ export default function PatientDashboard({ navigation }: any) {
                 coords ? (
                   <MapView
                     provider={PROVIDER_GOOGLE}
-                    style={{ ...StyleSheet.absoluteFillObject }}
+                    style={StyleSheet.absoluteFillObject}
                     initialRegion={{
                       latitude: coords.latitude,
                       longitude: coords.longitude,
@@ -395,7 +395,7 @@ export default function PatientDashboard({ navigation }: any) {
              coords ? (
                <MapView
                  provider={PROVIDER_GOOGLE}
-                 style={{ ...StyleSheet.absoluteFillObject }}
+                 style={StyleSheet.absoluteFillObject}
                  initialRegion={{
                    latitude: coords.latitude,
                    longitude: coords.longitude,
