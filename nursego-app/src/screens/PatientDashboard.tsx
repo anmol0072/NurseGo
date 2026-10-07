@@ -174,7 +174,7 @@ export default function PatientDashboard({ navigation }: any) {
                 coords ? (
                   <MapView
                     provider={PROVIDER_GOOGLE}
-                    style={StyleSheet.absoluteFillObject}
+                    style={{ flex: 1, width: '100%', height: '100%' }}
                     initialRegion={{
                       latitude: coords.latitude,
                       longitude: coords.longitude,
@@ -395,7 +395,7 @@ export default function PatientDashboard({ navigation }: any) {
              coords ? (
                <MapView
                  provider={PROVIDER_GOOGLE}
-                 style={StyleSheet.absoluteFillObject}
+                 style={{ flex: 1, width: '100%', height: '100%' }}
                  initialRegion={{
                    latitude: coords.latitude,
                    longitude: coords.longitude,
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
   scrollContainer: { flex: 1, marginTop: 16 },
   scrollContent: { paddingBottom: 40 },
   locationCard: { marginHorizontal: 16, marginBottom: 20, backgroundColor: '#ffffff', borderRadius: 20, padding: 12, borderWidth: 1, borderColor: '#e2e8f0' },
-  mapContainer: { height: 140, width: '100%', borderRadius: 12, overflow: 'hidden', backgroundColor: '#e2e8f0', marginBottom: 12 },
+  mapContainer: { height: 140, width: '100%', borderRadius: 12, backgroundColor: '#e2e8f0', marginBottom: 12 },
   expandBtn: { position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(255,255,255,0.9)', width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', zIndex: 5 },
   fullScreenMapContainer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: '#fff' },
   mapBackBtn: { position: 'absolute', left: 20, width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 5, zIndex: 10 },

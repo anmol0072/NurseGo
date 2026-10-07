@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function AdminLogin() {
   return (
@@ -28,9 +29,11 @@ export default function AdminLogin() {
             />
           </div>
           
-          <Button className="w-full py-6 text-lg bg-blue-600 hover:bg-blue-700">
-            Sign In
-          </Button>
+          <Link href="/dashboard" className="block">
+            <Button className="w-full py-6 text-lg bg-blue-600 hover:bg-blue-700">
+              Sign In (Bypass for Testing)
+            </Button>
+          </Link>
         </form>
       </div>
     </div>
